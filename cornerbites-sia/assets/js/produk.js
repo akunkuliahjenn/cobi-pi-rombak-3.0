@@ -1,4 +1,3 @@
-
 // Produk JavaScript Functions
 
 // Format Rupiah function
@@ -45,8 +44,6 @@ function editProduct(product) {
         customInput.classList.remove('hidden');
         customInput.required = true;
     }
-
-    
 
     // Format dan set harga jual - menampilkan harga lama dengan format yang benar
     const salePrice = parseFloat(product.sale_price);
@@ -109,8 +106,6 @@ function resetForm() {
     customInput.value = '';
     customInput.classList.add('hidden');
     customInput.required = false;
-
-    
 
     // Reset display dan hidden inputs untuk harga
     document.getElementById('sale_price_display').value = '';
