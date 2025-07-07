@@ -1,3 +1,4 @@
+
 <?php
 // pages/overhead_management.php
 // Halaman manajemen biaya overhead dan tenaga kerja
@@ -25,13 +26,13 @@ $labor_costs = [];
 
 // Pagination and search for overhead
 $search_overhead = $_GET['search_overhead'] ?? '';
-$limit_overhead = isset($_GET['limit_overhead']) && in_array((int)$_GET['limit_overhead'], [5, 10, 15, 20]) ? (int)$_GET['limit_overhead'] : 10;
+$limit_overhead = isset($_GET['limit_overhead']) && in_array((int)$_GET['limit_overhead'], [5, 10, 15, 20]) ? (int)$_GET['limit_overhead'] : 5;
 $page_overhead = isset($_GET['page_overhead']) ? max((int)$_GET['page_overhead'], 1) : 1;
 $offset_overhead = ($page_overhead - 1) * $limit_overhead;
 
 // Pagination and search for labor
 $search_labor = $_GET['search_labor'] ?? '';
-$limit_labor = isset($_GET['limit_labor']) && in_array((int)$_GET['limit_labor'], [5, 10, 15, 20]) ? (int)$_GET['limit_labor'] : 10;
+$limit_labor = isset($_GET['limit_labor']) && in_array((int)$_GET['limit_labor'], [5, 10, 15, 20]) ? (int)$_GET['limit_labor'] : 5;
 $page_labor = isset($_GET['page_labor']) ? max((int)$_GET['page_labor'], 1) : 1;
 $offset_labor = ($page_labor - 1) * $limit_labor;
 
@@ -481,15 +482,53 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'labor') {
                     <!-- Daftar Biaya Overhead -->
                     <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                         <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h3 class="text-xl font-semibold text-gray-900">Daftar Biaya Overhead</h3>
-                                <p class="text-sm text-gray-600 mt-1">Kelola dan pantau semua biaya overhead bulanan</p>
+                            <div class="flex items-center">
+                                <div class="p-2 bg-blue-100 rounded-lg mr-3">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-900">Daftar Biaya Overhead</h3>
+                                    <p class="text-sm text-gray-600 mt-1">Kelola dan pantau semua biaya overhead bulanan</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="flex items-center justify-end">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                        Total: <?php echo number_format($total_overhead); ?> data
+                                    </span>
+                                </div>
+                                <?php if ($total_overhead > 0): ?>
+                                    <div class="mt-1 text-xs text-blue-600 font-medium">
+                                        Total Biaya: Rp <?php 
+                                            try {
+                                                $total_amount_query = "SELECT SUM(amount) FROM overhead_costs WHERE is_active = 1";
+                                                if (!empty($search_overhead)) {
+                                                    $total_amount_query .= " AND name LIKE :search";
+                                                }
+                                                $total_amount_stmt = $conn->prepare($total_amount_query);
+                                                if (!empty($search_overhead)) {
+                                                    $total_amount_stmt->bindValue(':search', '%' . $search_overhead . '%');
+                                                }
+                                                $total_amount_stmt->execute();
+                                                $total_amount = $total_amount_stmt->fetchColumn();
+                                                echo number_format($total_amount ?: 0, 0, ',', '.');
+                                            } catch (Exception $e) {
+                                                echo "0";
+                                            }
+                                        ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
 
                         <!-- Filter & Search Overhead -->
                         <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
                                     <input type="text" id="search-overhead-input" value="<?php echo htmlspecialchars($search_overhead); ?>" 
@@ -504,14 +543,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'labor') {
                                         <option value="15" <?php echo $limit_overhead == 15 ? 'selected' : ''; ?>>15</option>
                                         <option value="20" <?php echo $limit_overhead == 20 ? 'selected' : ''; ?>>20</option>
                                     </select>
-                                </div>
-                                <div class="flex items-end gap-2">
-                                    <button id="filter-overhead-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
-                                        Filter
-                                    </button>
-                                    <button id="reset-overhead-btn" class="px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg transition-colors font-medium">
-                                        Reset
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -584,15 +615,53 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'labor') {
                     <!-- Daftar Tenaga Kerja -->
                     <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                         <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h3 class="text-xl font-semibold text-gray-900">Daftar Tenaga Kerja</h3>
-                                <p class="text-sm text-gray-600 mt-1">Kelola dan pantau data upah tenaga kerja</p>
+                            <div class="flex items-center">
+                                <div class="p-2 bg-green-100 rounded-lg mr-3">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-900">Daftar Tenaga Kerja</h3>
+                                    <p class="text-sm text-gray-600 mt-1">Kelola dan pantau data upah tenaga kerja</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="flex items-center justify-end">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                    Total: <?php echo number_format($total_labor); ?> posisi
+                                    </span>
+                                </div>
+                                <?php if ($total_labor > 0): ?>
+                                    <div class="mt-1 text-xs text-green-600 font-medium">
+                                        Rata-rata Upah: Rp <?php 
+                                            try {
+                                                $avg_rate_query = "SELECT AVG(hourly_rate) FROM labor_costs WHERE is_active = 1";
+                                                if (!empty($search_labor)) {
+                                                    $avg_rate_query .= " AND position_name LIKE :search";
+                                                }
+                                                $avg_rate_stmt = $conn->prepare($avg_rate_query);
+                                                if (!empty($search_labor)) {
+                                                    $avg_rate_stmt->bindValue(':search', '%' . $search_labor . '%');
+                                                }
+                                                $avg_rate_stmt->execute();
+                                                $avg_rate = $avg_rate_stmt->fetchColumn();
+                                                echo number_format($avg_rate ?: 0, 0, ',', '.');
+                                            } catch (Exception $e) {
+                                                echo "0";
+                                            }
+                                        ?>/jam
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
 
                         <!-- Filter & Search Labor -->
                         <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
                                     <input type="text" id="search-labor-input" value="<?php echo htmlspecialchars($search_labor); ?>" 
@@ -607,14 +676,6 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'labor') {
                                         <option value="15" <?php echo $limit_labor == 15 ? 'selected' : ''; ?>>15</option>
                                         <option value="20" <?php echo $limit_labor == 20 ? 'selected' : ''; ?>>20</option>
                                     </select>
-                                </div>
-                                <div class="flex items-end gap-2">
-                                    <button id="filter-labor-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
-                                        Filter
-                                    </button>
-                                    <button id="reset-labor-btn" class="px-4 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg transition-colors font-medium">
-                                        Reset
-                                    </button>
                                 </div>
                             </div>
                         </div>

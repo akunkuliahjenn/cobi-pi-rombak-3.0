@@ -1,3 +1,4 @@
+
 // Global variables
 let searchOverheadTimeout;
 let searchLaborTimeout;
@@ -272,14 +273,6 @@ window.loadLaborData = loadLaborData;
 
 // Format currency input with automatic thousand separators
 document.addEventListener('DOMContentLoaded', function() {
-    // Only load data via AJAX if URL contains reload parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('reload') === '1') {
-        // Load initial data automatically after form submission
-        loadOverheadData(1);
-        loadLaborData(1);
-    }
-
     // Setup format input untuk overhead amount
     const amountInput = document.getElementById('overhead_amount');
     if (amountInput) {
@@ -375,26 +368,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup event listeners untuk overhead search
     const searchOverheadInput = document.getElementById('search-overhead-input');
     const limitOverheadSelect = document.getElementById('limit-overhead-select');
-    const filterOverheadBtn = document.getElementById('filter-overhead-btn');
-    const resetOverheadBtn = document.getElementById('reset-overhead-btn');
 
     // Setup event listeners untuk labor search
     const searchLaborInput = document.getElementById('search-labor-input');
     const limitLaborSelect = document.getElementById('limit-labor-select');
-    const filterLaborBtn = document.getElementById('filter-labor-btn');
-    const resetLaborBtn = document.getElementById('reset-labor-btn');
 
     // Real-time search untuk overhead dengan debouncing
     if (searchOverheadInput) {
         searchOverheadInput.addEventListener('input', function() {
             clearTimeout(searchOverheadTimeout);
             searchOverheadTimeout = setTimeout(() => {
-                // Only search if user actually typed something
-                const currentValue = this.value.trim();
-                const initialValue = this.getAttribute('value') || '';
-                if (currentValue !== initialValue) {
-                    loadOverheadData(1);
-                }
+                loadOverheadData(1);
             }, 500);
         });
     }
@@ -404,57 +388,21 @@ document.addEventListener('DOMContentLoaded', function() {
         searchLaborInput.addEventListener('input', function() {
             clearTimeout(searchLaborTimeout);
             searchLaborTimeout = setTimeout(() => {
-                // Only search if user actually typed something
-                const currentValue = this.value.trim();
-                const initialValue = this.getAttribute('value') || '';
-                if (currentValue !== initialValue) {
-                    loadLaborData(1);
-                }
+                loadLaborData(1);
             }, 500);
         });
     }
 
-    // Event listeners untuk overhead
-    if (filterOverheadBtn) {
-        filterOverheadBtn.addEventListener('click', function() {
-            loadOverheadData(1);
-        });
-    }
-
+    // Event listeners untuk limit select
     if (limitOverheadSelect) {
         limitOverheadSelect.addEventListener('change', function() {
             loadOverheadData(1);
         });
     }
 
-    if (resetOverheadBtn) {
-        resetOverheadBtn.addEventListener('click', function() {
-            searchOverheadInput.value = '';
-            limitOverheadSelect.value = '10';
-            // Reload page to show all data
-            window.location.href = '/cornerbites-sia/pages/overhead_management.php';
-        });
-    }
-
-    // Event listeners untuk labor
-    if (filterLaborBtn) {
-        filterLaborBtn.addEventListener('click', function() {
-            loadLaborData(1);
-        });
-    }
-
     if (limitLaborSelect) {
         limitLaborSelect.addEventListener('change', function() {
             loadLaborData(1);
-        });
-    }
-
-    if (resetLaborBtn) {
-        resetLaborBtn.addEventListener('click', function() {
-            searchLaborInput.value = '';
-            limitLaborSelect.value = '10';
-            // Reload page to show all data
-            window.location.href = '/cornerbites-sia/pages/overhead_management.php';
         });
     }
 });
