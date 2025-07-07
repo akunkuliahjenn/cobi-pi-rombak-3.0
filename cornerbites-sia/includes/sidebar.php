@@ -18,7 +18,7 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
                     <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
                 </svg>
             </div>
-            <span class="text-lg font-semibold text-gray-800">Manajemen SIA</span>
+            <span class="text-lg font-semibold text-gray-800">Manajemen HPP Sederhana</span>
         </div>
     </div>
 
@@ -34,13 +34,25 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
                     Dashboard
                 </a>
 
-                
-
                 <a href="/cornerbites-sia/pages/produk.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'produk.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
                     <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'produk.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
                     </svg>
                     Manajemen Produk
+                </a>
+
+                <a href="/cornerbites-sia/pages/bahan_baku.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'bahan_baku.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
+                    <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'bahan_baku.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    Manajemen Bahan Baku & Kemasan
+                </a>
+
+                <a href="/cornerbites-sia/pages/overhead_management.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'overhead_management.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
+                    <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'overhead_management.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    Overhead & Tenaga Kerja
                 </a>
 
                 <a href="/cornerbites-sia/pages/resep_produk.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'resep_produk.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
@@ -50,19 +62,6 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
                     Manajemen Resep & HPP
                 </a>
 
-                <a href="/cornerbites-sia/pages/bahan_baku.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'bahan_baku.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
-                    <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'bahan_baku.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                    </svg>
-                    Manajemen Bahan Baku
-                </a>
-
-                <a href="/cornerbites-sia/pages/overhead_management.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'overhead_management.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
-                    <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'overhead_management.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                    </svg>
-                    Overhead & Tenaga Kerja
-                </a>
 
                 
 

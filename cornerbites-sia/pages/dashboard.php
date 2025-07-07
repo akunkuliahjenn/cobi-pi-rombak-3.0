@@ -3,7 +3,119 @@
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/db.php';
 
-// Initialize variables
+// Handle AJAX request for ranking pagination
+if (isset($_GET['ajax']) && $_GET['ajax'] === 'ranking') {
+    $ranking_page = isset($_GET['ranking_page']) ? max((int)$_GET['ranking_page'], 1) : 1;
+    $ranking_limit = 5;
+    $ranking_offset = ($ranking_page - 1) * $ranking_limit;
+
+    try {
+        $conn = $db;
+        
+        // Count total products for pagination
+        $stmt = $conn->query("SELECT COUNT(*) as total FROM products WHERE sale_price > 0");
+        $result = $stmt->fetch();
+        $total_products_ranking = $result ? ($result['total'] ?? 0) : 0;
+        $total_ranking_pages = ceil($total_products_ranking / $ranking_limit);
+
+        // Get ranking data
+        $stmt = $conn->prepare("SELECT name, cost_price, sale_price, (sale_price - cost_price) as profit, ((sale_price - cost_price) / sale_price * 100) as margin, 
+                              CASE WHEN sale_price > cost_price THEN 'Menguntungkan' ELSE 'Rugi' END as status 
+                              FROM products WHERE sale_price > 0 
+                              ORDER BY profit DESC LIMIT :limit OFFSET :offset");
+        $stmt->bindValue(':limit', $ranking_limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $ranking_offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $profitabilityRanking = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        ob_start();
+        ?>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Produk</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HPP per Unit</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Jual</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit per Unit</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Margin (%)</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <?php if (!empty($profitabilityRanking)): ?>
+                        <?php foreach ($profitabilityRanking as $index => $product): ?>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo (($ranking_page - 1) * $ranking_limit) + $index + 1; ?></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo htmlspecialchars($product['name']); ?></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?php echo number_format($product['cost_price'], 0, ',', '.'); ?></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?php echo number_format($product['sale_price'], 0, ',', '.'); ?></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?php echo number_format($product['profit'], 0, ',', '.'); ?></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo number_format($product['margin'], 1); ?>%</td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <?php echo $product['status'] == 'Menguntungkan' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
+                                        <?php echo $product['status']; ?>
+                                    </span>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="7" class="px-4 py-8 text-center text-gray-500">Belum ada data produk</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination for Ranking -->
+        <?php if ($total_ranking_pages > 1): ?>
+        <div class="mt-6 flex justify-between items-center">
+            <div class="text-sm text-gray-700">
+                Menampilkan <?php echo (($ranking_page - 1) * $ranking_limit) + 1; ?> - 
+                <?php echo min($ranking_page * $ranking_limit, $total_products_ranking); ?> 
+                dari <?php echo $total_products_ranking; ?> produk
+            </div>
+            <div class="flex space-x-2">
+                <?php if ($ranking_page > 1): ?>
+                    <button onclick="loadRankingData(<?php echo $ranking_page - 1; ?>)"
+                           class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        Previous
+                    </button>
+                <?php endif; ?>
+
+                <?php
+                $start_page = max(1, $ranking_page - 2);
+                $end_page = min($total_ranking_pages, $ranking_page + 2);
+                for ($i = $start_page; $i <= $end_page; $i++):
+                ?>
+                    <button onclick="loadRankingData(<?php echo $i; ?>)"
+                           class="px-3 py-2 text-sm <?php echo $i == $ranking_page ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?> rounded-lg transition-colors">
+                        <?php echo $i; ?>
+                    </button>
+                <?php endfor; ?>
+
+                <?php if ($ranking_page < $total_ranking_pages): ?>
+                    <button onclick="loadRankingData(<?php echo $ranking_page + 1; ?>)"
+                           class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        Next
+                    </button>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+        <?php
+        $content = ob_get_clean();
+        echo $content;
+        exit;
+    } catch (Exception $e) {
+        echo '<div class="text-center text-red-500 py-8">Error loading data</div>';
+        exit;
+    }
+}
+
+// Initialize variables with default values
 $totalProducts = 0;
 $totalRawMaterials = 0;
 $lowStockProducts = 0;
@@ -12,12 +124,21 @@ $totalRecipes = 0;
 $avgHPP = 0;
 $avgMargin = 0;
 $profitableProducts = 0;
+$totalBahanBaku = 0;
+$totalKemasan = 0;
+$totalLaborPositions = 0;
+$totalOverheadItems = 0;
+$totalLaborCost = 0;
+$totalOverheadCost = 0;
 $highestProfitProduct = null;
 $lowestProfitProduct = null;
 $profitabilityRanking = [];
+$total_products_ranking = 0;
+$total_ranking_pages = 0;
 $costBreakdown = [
     'bahan_baku' => 0,
     'kemasan' => 0,
+    'tenaga_kerja' => 0,
     'overhead' => 0
 ];
 
@@ -26,51 +147,65 @@ try {
 
     // Total Products
     $stmt = $conn->query("SELECT COUNT(*) as total FROM products");
-    $totalProducts = $stmt->fetch()['total'] ?? 0;
+    $result = $stmt->fetch();
+    $totalProducts = $result ? ($result['total'] ?? 0) : 0;
 
     // Total Raw Materials (Bahan Baku + Kemasan)
     $stmt = $conn->query("SELECT COUNT(*) as total FROM raw_materials");
-    $totalRawMaterials = $stmt->fetch()['total'] ?? 0;
+    $result = $stmt->fetch();
+    $totalRawMaterials = $result ? ($result['total'] ?? 0) : 0;
 
     // Total Bahan Baku only
     $stmt = $conn->query("SELECT COUNT(*) as total FROM raw_materials WHERE type = 'bahan'");
-    $totalBahanBaku = $stmt->fetch()['total'] ?? 0;
+    $result = $stmt->fetch();
+    $totalBahanBaku = $result ? ($result['total'] ?? 0) : 0;
 
     // Total Kemasan only  
     $stmt = $conn->query("SELECT COUNT(*) as total FROM raw_materials WHERE type = 'kemasan'");
-    $totalKemasan = $stmt->fetch()['total'] ?? 0;
+    $result = $stmt->fetch();
+    $totalKemasan = $result ? ($result['total'] ?? 0) : 0;
 
     // Low Stock Products (< 10)
     $stmt = $conn->query("SELECT COUNT(*) as total FROM products WHERE stock < 10");
-    $lowStockProducts = $stmt->fetch()['total'] ?? 0;
+    $result = $stmt->fetch();
+    $lowStockProducts = $result ? ($result['total'] ?? 0) : 0;
 
     // Low Stock Raw Materials (< 1)
     $stmt = $conn->query("SELECT COUNT(*) as total FROM raw_materials WHERE current_stock < 1");
-    $lowStockMaterials = $stmt->fetch()['total'] ?? 0;
+    $result = $stmt->fetch();
+    $lowStockMaterials = $result ? ($result['total'] ?? 0) : 0;
 
     // Total Recipes Active (products that have recipes)
     $stmt = $conn->query("SELECT COUNT(DISTINCT product_id) as total FROM product_recipes");
-    $totalRecipes = $stmt->fetch()['total'] ?? 0;
+    $result = $stmt->fetch();
+    $totalRecipes = $result ? ($result['total'] ?? 0) : 0;
 
-    // Total Labor Positions
-    $stmt = $conn->query("SELECT COUNT(*) as total FROM labor_costs WHERE is_active = 1");
-    $totalLaborPositions = $stmt->fetch()['total'] ?? 0;
+    // Total Labor Positions and Cost
+    $stmt = $conn->query("SELECT COUNT(*) as total, COALESCE(SUM(hourly_rate), 0) as total_cost FROM labor_costs WHERE is_active = 1");
+    $result = $stmt->fetch();
+    $totalLaborPositions = $result ? ($result['total'] ?? 0) : 0;
+    $totalLaborCost = $result ? ($result['total_cost'] ?? 0) : 0;
 
-    // Total Overhead Items
-    $stmt = $conn->query("SELECT COUNT(*) as total FROM overhead_costs WHERE is_active = 1");
-    $totalOverheadItems = $stmt->fetch()['total'] ?? 0;
+    // Total Overhead Items and Cost
+    $stmt = $conn->query("SELECT COUNT(*) as total, COALESCE(SUM(amount), 0) as total_cost FROM overhead_costs WHERE is_active = 1");
+    $result = $stmt->fetch();
+    $totalOverheadItems = $result ? ($result['total'] ?? 0) : 0;
+    $totalOverheadCost = $result ? ($result['total_cost'] ?? 0) : 0;
 
     // Calculate Average HPP
     $stmt = $conn->query("SELECT AVG(cost_price) as avg_hpp FROM products WHERE cost_price > 0");
-    $avgHPP = $stmt->fetch()['avg_hpp'] ?? 0;
+    $result = $stmt->fetch();
+    $avgHPP = $result ? ($result['avg_hpp'] ?? 0) : 0;
 
     // Calculate Average Margin
     $stmt = $conn->query("SELECT AVG(((sale_price - cost_price) / sale_price) * 100) as avg_margin FROM products WHERE sale_price > 0 AND cost_price > 0");
-    $avgMargin = $stmt->fetch()['avg_margin'] ?? 0;
+    $result = $stmt->fetch();
+    $avgMargin = $result ? ($result['avg_margin'] ?? 0) : 0;
 
     // Count Profitable Products (profit > 0)
     $stmt = $conn->query("SELECT COUNT(*) as total FROM products WHERE sale_price > cost_price AND sale_price > 0");
-    $profitableProducts = $stmt->fetch()['total'] ?? 0;
+    $result = $stmt->fetch();
+    $profitableProducts = $result ? ($result['total'] ?? 0) : 0;
 
     // Product with highest profit margin
     $stmt = $conn->query("SELECT name, cost_price, sale_price, (sale_price - cost_price) as profit, ((sale_price - cost_price) / sale_price * 100) as margin FROM products WHERE sale_price > 0 ORDER BY profit DESC LIMIT 1");
@@ -80,14 +215,35 @@ try {
     $stmt = $conn->query("SELECT name, cost_price, sale_price, (sale_price - cost_price) as profit, ((sale_price - cost_price) / sale_price * 100) as margin FROM products WHERE sale_price > 0 ORDER BY profit ASC LIMIT 1");
     $lowestProfitProduct = $stmt->fetch();
 
-    // Profitability Ranking (Top 10)
-    $stmt = $conn->query("SELECT name, cost_price, sale_price, (sale_price - cost_price) as profit, ((sale_price - cost_price) / sale_price * 100) as margin, 
-                          CASE WHEN sale_price > cost_price THEN 'Menguntungkan' ELSE 'Rugi' END as status 
-                          FROM products WHERE sale_price > 0 
-                          ORDER BY profit DESC LIMIT 10");
-    $profitabilityRanking = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Pagination for profitability ranking
+    $ranking_page = isset($_GET['ranking_page']) ? max((int)$_GET['ranking_page'], 1) : 1;
+    $ranking_limit = 5;
+    $ranking_offset = ($ranking_page - 1) * $ranking_limit;
 
-    // Cost Breakdown Analysis
+    // Count total products for pagination
+    $stmt = $conn->query("SELECT COUNT(*) as total FROM products WHERE sale_price > 0");
+    $result = $stmt->fetch();
+    $total_products_ranking = $result ? ($result['total'] ?? 0) : 0;
+    $total_ranking_pages = ceil($total_products_ranking / $ranking_limit);
+
+    // Ensure $total_ranking_pages is at least 1 if there are products
+    if ($total_products_ranking > 0 && $total_ranking_pages == 0) {
+        $total_ranking_pages = 1;
+    }
+
+    // Profitability Ranking with pagination
+    if ($total_products_ranking > 0) {
+        $stmt = $conn->prepare("SELECT name, cost_price, sale_price, (sale_price - cost_price) as profit, ((sale_price - cost_price) / sale_price * 100) as margin, 
+                              CASE WHEN sale_price > cost_price THEN 'Menguntungkan' ELSE 'Rugi' END as status 
+                              FROM products WHERE sale_price > 0 
+                              ORDER BY profit DESC LIMIT :limit OFFSET :offset");
+        $stmt->bindValue(':limit', $ranking_limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $ranking_offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $profitabilityRanking = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Cost Breakdown Analysis - Enhanced to include all cost types
     $stmt = $conn->query("
         SELECT 
             SUM(CASE WHEN rm.type = 'bahan' THEN pr.quantity * rm.purchase_price_per_unit / rm.default_package_quantity ELSE 0 END) as bahan_cost,
@@ -102,13 +258,13 @@ try {
         $costBreakdown['kemasan'] = $breakdown['kemasan_cost'] ?? 0;
     }
 
-    // Get overhead costs (assuming there's an overhead table)
-    $stmt = $conn->query("SELECT SUM(amount) as total_overhead FROM overhead_costs");
-    $overheadResult = $stmt->fetch();
-    $costBreakdown['overhead'] = $overheadResult['total_overhead'] ?? 0;
+    // Add labor and overhead costs to breakdown
+    $costBreakdown['tenaga_kerja'] = $totalLaborCost;
+    $costBreakdown['overhead'] = $totalOverheadCost;
 
 } catch (PDOException $e) {
     error_log("Error di Dashboard: " . $e->getMessage());
+    // Variables are already initialized above, so no need to reinitialize
 }
 ?>
 
@@ -232,7 +388,7 @@ try {
                         </div>
                         <h3 class="text-sm font-semibold text-gray-600 mb-2">Total Tenaga Kerja</h3>
                         <p class="text-3xl font-bold text-gray-800 mb-1"><?php echo number_format($totalLaborPositions); ?></p>
-                        <p class="text-xs text-gray-500">Posisi aktif</p>
+                        <p class="text-xs text-gray-500">Rp <?php echo number_format($totalLaborCost, 0, ',', '.'); ?>/jam</p>
                     </div>
 
                     <!-- Total Overhead -->
@@ -247,7 +403,7 @@ try {
                         </div>
                         <h3 class="text-sm font-semibold text-gray-600 mb-2">Total Overhead</h3>
                         <p class="text-3xl font-bold text-gray-800 mb-1"><?php echo number_format($totalOverheadItems); ?></p>
-                        <p class="text-xs text-gray-500">Item aktif</p>
+                        <p class="text-xs text-gray-500">Rp <?php echo number_format($totalOverheadCost, 0, ',', '.'); ?></p>
                     </div>
                 </div>
 
@@ -264,43 +420,82 @@ try {
                             <h3 class="text-xl font-bold text-gray-900">Ranking Profitabilitas Produk</h3>
                         </div>
 
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full">
-                                <thead>
-                                    <tr class="bg-gray-50">
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Produk</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HPP per Unit</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Jual</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit per Unit</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Margin (%)</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <?php if (!empty($profitabilityRanking)): ?>
-                                        <?php foreach ($profitabilityRanking as $index => $product): ?>
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo $index + 1; ?></td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo htmlspecialchars($product['name']); ?></td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?php echo number_format($product['cost_price'], 0, ',', '.'); ?></td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?php echo number_format($product['sale_price'], 0, ',', '.'); ?></td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?php echo number_format($product['profit'], 0, ',', '.'); ?></td>
-                                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo number_format($product['margin'], 1); ?>%</td>
-                                                <td class="px-4 py-4 whitespace-nowrap">
-                                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <?php echo $product['status'] == 'Menguntungkan' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
-                                                        <?php echo $product['status']; ?>
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="7" class="px-4 py-8 text-center text-gray-500">Belum ada data produk</td>
+                        <div id="ranking-container">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="bg-gray-50">
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Produk</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HPP per Unit</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga Jual</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profit per Unit</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Margin (%)</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                         </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <?php if (!empty($profitabilityRanking)): ?>
+                                            <?php foreach ($profitabilityRanking as $index => $product): ?>
+                                                <tr class="hover:bg-gray-50">
+                                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo (($ranking_page - 1) * $ranking_limit) + $index + 1; ?></td>
+                                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo htmlspecialchars($product['name']); ?></td>
+                                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?php echo number_format($product['cost_price'], 0, ',', '.'); ?></td>
+                                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?php echo number_format($product['sale_price'], 0, ',', '.'); ?></td>
+                                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">Rp <?php echo number_format($product['profit'], 0, ',', '.'); ?></td>
+                                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo number_format($product['margin'], 1); ?>%</td>
+                                                    <td class="px-4 py-4 whitespace-nowrap">
+                                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full <?php echo $product['status'] == 'Menguntungkan' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'; ?>">
+                                                            <?php echo $product['status']; ?>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="7" class="px-4 py-8 text-center text-gray-500">Belum ada data produk</td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination for Ranking -->
+                            <?php if ($total_ranking_pages > 1): ?>
+                            <div class="mt-6 flex justify-between items-center">
+                                <div class="text-sm text-gray-700">
+                                    Menampilkan <?php echo (($ranking_page - 1) * $ranking_limit) + 1; ?> - 
+                                    <?php echo min($ranking_page * $ranking_limit, $total_products_ranking); ?> 
+                                    dari <?php echo $total_products_ranking; ?> produk
+                                </div>
+                                <div class="flex space-x-2">
+                                    <?php if ($ranking_page > 1): ?>
+                                        <button onclick="loadRankingData(<?php echo $ranking_page - 1; ?>)"
+                                               class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                                            Previous
+                                        </button>
                                     <?php endif; ?>
-                                </tbody>
-                            </table>
+
+                                    <?php
+                                    $start_page = max(1, $ranking_page - 2);
+                                    $end_page = min($total_ranking_pages, $ranking_page + 2);
+                                    for ($i = $start_page; $i <= $end_page; $i++):
+                                    ?>
+                                        <button onclick="loadRankingData(<?php echo $i; ?>)"
+                                               class="px-3 py-2 text-sm <?php echo $i == $ranking_page ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?> rounded-lg transition-colors">
+                                            <?php echo $i; ?>
+                                        </button>
+                                    <?php endfor; ?>
+
+                                    <?php if ($ranking_page < $total_ranking_pages): ?>
+                                        <button onclick="loadRankingData(<?php echo $ranking_page + 1; ?>)"
+                                               class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                                            Next
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -342,11 +537,21 @@ try {
                                     <div class="text-xs text-gray-500 mt-1"><?php echo number_format($totalBahanBaku); ?> bahan, <?php echo number_format($totalKemasan); ?> kemasan</div>
                                 </div>
 
-                                <!-- Rata-rata Breakdown Biaya -->
+                                <!-- Cost Breakdown -->
                                 <?php
                                 $totalCost = array_sum($costBreakdown);
-                                $colors = ['bahan_baku' => 'blue', 'kemasan' => 'green', 'overhead' => 'purple'];
-                                $labels = ['bahan_baku' => 'Bahan Baku', 'kemasan' => 'Kemasan', 'overhead' => 'Overhead'];
+                                $colors = [
+                                    'bahan_baku' => 'blue', 
+                                    'kemasan' => 'green', 
+                                    'tenaga_kerja' => 'orange',
+                                    'overhead' => 'purple'
+                                ];
+                                $labels = [
+                                    'bahan_baku' => 'Bahan Baku', 
+                                    'kemasan' => 'Kemasan', 
+                                    'tenaga_kerja' => 'Tenaga Kerja',
+                                    'overhead' => 'Overhead'
+                                ];
                                 ?>
                                 <?php foreach ($costBreakdown as $type => $cost): ?>
                                     <?php 
@@ -537,5 +742,18 @@ try {
         </main>
     </div>
 </div>
+
+<script>
+function loadRankingData(page) {
+    fetch(`dashboard.php?ajax=ranking&ranking_page=${page}`)
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('ranking-container').innerHTML = data;
+        })
+        .catch(error => {
+            console.error('Error loading ranking data:', error);
+        });
+}
+</script>
 
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>

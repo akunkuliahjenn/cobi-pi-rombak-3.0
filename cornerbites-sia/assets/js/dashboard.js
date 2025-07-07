@@ -1,3 +1,4 @@
+
 // Dashboard JavaScript untuk HPP Calculator
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize dashboard features
@@ -30,6 +31,42 @@ function initAlerts() {
         }, 5000);
     });
 }
+
+// Function to load ranking data with AJAX
+function loadRankingData(page = 1) {
+    const container = document.getElementById('ranking-container');
+    
+    if (!container) {
+        console.error('Ranking container not found');
+        return;
+    }
+
+    // Show loading
+    container.innerHTML = '<div class="flex justify-center items-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600"></div><span class="ml-2 text-gray-600">Memuat ranking...</span></div>';
+
+    const params = new URLSearchParams({
+        ajax: 'ranking',
+        ranking_page: page
+    });
+
+    fetch(`/cornerbites-sia/pages/dashboard.php?${params.toString()}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error loading ranking data:', error);
+            container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading ranking data. Please try again.</div>';
+        });
+}
+
+// Make loadRankingData global
+window.loadRankingData = loadRankingData;
 
 // Utility function to format currency
 function formatCurrency(amount) {
