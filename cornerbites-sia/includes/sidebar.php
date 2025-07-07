@@ -64,12 +64,7 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
                     Overhead & Tenaga Kerja
                 </a>
 
-                <a href="/cornerbites-sia/pages/analisis_hpp.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'analisis_hpp.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
-                    <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'analisis_hpp.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                    Analisis HPP
-                </a>
+                
 
                 
             </div>

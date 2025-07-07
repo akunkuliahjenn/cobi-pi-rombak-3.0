@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const searchType = this.id === 'bahan_limit' ? 'raw' : 'kemasan';
             const searchInput = document.getElementById(searchType === 'raw' ? 'search_raw' : 'search_kemasan');
             const searchTerm = searchInput ? searchInput.value : '';
-            
+
             // Clear current results immediately to show loading
             const containerId = searchType === 'raw' ? 'raw-materials-container' : 'packaging-materials-container';
             const container = document.getElementById(containerId);
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `;
             }
-            
+
             performAjaxSearch(searchType, searchTerm, this.value);
         });
     });
@@ -140,11 +140,13 @@ function editBahanBaku(material) {
     document.getElementById('type').value = material.type;
     document.getElementById('unit').value = material.unit;
 
-    // Format numbers without .00 for display
+    // Format numbers without .00 for display - clean integer display
     const purchaseSize = parseFloat(material.default_package_quantity);
-    document.getElementById('purchase_size').value = purchaseSize % 1 === 0 ? purchaseSize.toFixed(0) : purchaseSize.toString();
+    document.getElementById('purchase_size').value = purchaseSize % 1 === 0 ? Math.round(purchaseSize).toString() : purchaseSize.toString();
 
-    document.getElementById('purchase_price_per_unit').value = formatNumber(material.purchase_price_per_unit);
+    // Format price as integer and remove any decimal places for display
+    const priceAsInt = Math.round(parseFloat(material.purchase_price_per_unit));
+    document.getElementById('purchase_price_per_unit').value = priceAsInt.toLocaleString('id-ID');
 
     // Update labels and button based on type
     const purchaseSizeLabel = document.getElementById('purchase_size_label');
@@ -320,7 +322,7 @@ function performAjaxSearch(type, searchTerm, limit) {
             // Parse response to separate HTML content from scripts
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = html;
-            
+
             // Extract and execute scripts
             const scripts = tempDiv.querySelectorAll('script');
             scripts.forEach(script => {
@@ -333,7 +335,7 @@ function performAjaxSearch(type, searchTerm, limit) {
                 }
                 script.remove();
             });
-            
+
             // Update container with remaining HTML
             container.innerHTML = tempDiv.innerHTML;
 
@@ -371,7 +373,76 @@ function updateTotalCount(elementId, count) {
     }
 }
 
+// Tab navigation functionality
+function switchTab(tabType) {
+    // Update tab buttons
+    const tabBahan = document.getElementById('tab-bahan');
+    const tabKemasan = document.getElementById('tab-kemasan');
+    const contentBahan = document.getElementById('content-bahan');
+    const contentKemasan = document.getElementById('content-kemasan');
+    const badgeBahan = document.getElementById('badge-bahan');
+    const badgeKemasan = document.getElementById('badge-kemasan');
+
+    if (tabType === 'bahan') {
+        // Activate bahan tab
+        tabBahan.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+        tabBahan.classList.remove('text-gray-500', 'hover:text-gray-700');
+        tabBahan.setAttribute('aria-selected', 'true');
+
+        // Deactivate kemasan tab
+        tabKemasan.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+        tabKemasan.classList.add('text-gray-500', 'hover:text-gray-700');
+        tabKemasan.setAttribute('aria-selected', 'false');
+
+        // Show/hide content
+        contentBahan.classList.remove('hidden');
+        contentKemasan.classList.add('hidden');
+
+        // Update badge styles
+        badgeBahan.classList.remove('bg-gray-100', 'text-gray-600');
+        badgeBahan.classList.add('bg-blue-100', 'text-blue-800');
+        badgeKemasan.classList.remove('bg-green-100', 'text-green-800');
+        badgeKemasan.classList.add('bg-gray-100', 'text-gray-600');
+
+    } else if (tabType === 'kemasan') {
+        // Activate kemasan tab
+        tabKemasan.classList.add('bg-white', 'text-green-600', 'shadow-sm');
+        tabKemasan.classList.remove('text-gray-500', 'hover:text-gray-700');
+        tabKemasan.setAttribute('aria-selected', 'true');
+
+        // Deactivate bahan tab
+        tabBahan.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+        tabBahan.classList.add('text-gray-500', 'hover:text-gray-700');
+        tabBahan.setAttribute('aria-selected', 'false');
+
+        // Show/hide content
+        contentKemasan.classList.remove('hidden');
+        contentBahan.classList.add('hidden');
+
+        // Update badge styles
+        badgeKemasan.classList.remove('bg-gray-100', 'text-gray-600');
+        badgeKemasan.classList.add('bg-green-100', 'text-green-800');
+        badgeBahan.classList.remove('bg-blue-100', 'text-blue-800');
+        badgeBahan.classList.add('bg-gray-100', 'text-gray-600');
+    }
+}
+
+// Update badge counts for tabs
+function updateTabBadges(rawCount, kemasanCount) {
+    const badgeBahan = document.getElementById('badge-bahan');
+    const badgeKemasan = document.getElementById('badge-kemasan');
+
+    if (badgeBahan) {
+        badgeBahan.textContent = rawCount;
+    }
+    if (badgeKemasan) {
+        badgeKemasan.textContent = kemasanCount;
+    }
+}
+
 // Make functions global
 window.editBahanBaku = editBahanBaku;
 window.resetForm = resetForm;
 window.updateTotalCount = updateTotalCount;
+window.switchTab = switchTab;
+window.updateTabBadges = updateTabBadges;
