@@ -521,19 +521,49 @@ function switchManualTab(type) {
     overheadContent.classList.add('hidden');
     laborContent.classList.add('hidden');
 
+    // Get select elements
+    const overheadSelect = document.getElementById('manual-overhead-select');
+    const laborSelect = document.getElementById('manual-labor-select');
+
     if (type === 'overhead') {
         overheadTab.className = 'py-2 px-1 border-b-2 font-medium text-sm border-purple-600 text-purple-600';
         overheadContent.classList.remove('hidden');
         action.value = 'add_manual_overhead';
         submitText.textContent = 'Tambah Overhead ke Resep';
         submitBtn.className = 'w-full mt-6 bg-purple-600 text-white py-3 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-200';
+
+        // Enable overhead select and disable labor select
+        if (overheadSelect) {
+            overheadSelect.required = true;
+            overheadSelect.disabled = false;
+            overheadSelect.name = 'overhead_id';
+        }
+        if (laborSelect) {
+            laborSelect.required = false;
+            laborSelect.disabled = true;
+            laborSelect.removeAttribute('name');
+        }
     } else {
         laborTab.className = 'py-2 px-1 border-b-2 font-medium text-sm border-orange-600 text-orange-600';
         laborContent.classList.remove('hidden');
         action.value = 'add_manual_labor';
         submitText.textContent = 'Tambah Tenaga Kerja ke Resep';
         submitBtn.className = 'w-full mt-6 bg-orange-600 text-white py-3 px-4 rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 transition duration-200';
+
+        // Enable labor select and disable overhead select
+        if (laborSelect) {
+            laborSelect.required = true;
+            laborSelect.disabled = false;
+            laborSelect.name = 'labor_id';
+        }
+        if (overheadSelect) {
+            overheadSelect.required = false;
+            overheadSelect.disabled = true;
+            overheadSelect.removeAttribute('name');
+        }
     }
+
+    console.log('Switched to manual tab:', type, 'Action:', action.value);
 }
 
 // Delete manual overhead

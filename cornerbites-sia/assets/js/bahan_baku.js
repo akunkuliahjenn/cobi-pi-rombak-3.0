@@ -3,6 +3,8 @@
 
 const unitOptions = ['kg', 'gram', 'liter', 'ml', 'pcs', 'buah', 'roll', 'meter', 'box', 'botol', 'lembar'];
 const typeOptions = ['bahan', 'kemasan'];
+const validLimits = [6, 12, 18, 24, 30];
+const defaultLimit = 6;
 
 // Currency formatting for price input
 document.addEventListener('DOMContentLoaded', function() {
@@ -24,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Convert formatted price back to number
                 const currentValue = priceInput.value.replace(/[^\d]/g, '');
                 priceInput.value = currentValue;
-                
+
                 // Let the form submit normally
                 return true;
             });
@@ -93,7 +95,27 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     limitSelects.forEach(select => {
-        select.addEventListener('change', saveScrollPosition);
+        select.addEventListener('change', function() {
+            saveScrollPosition();
+            // Langsung trigger pencarian dengan limit baru
+            const searchType = this.id === 'bahan_limit' ? 'raw' : 'kemasan';
+            const searchInput = document.getElementById(searchType === 'raw' ? 'search_raw' : 'search_kemasan');
+            const searchTerm = searchInput ? searchInput.value : '';
+            
+            // Clear current results immediately to show loading
+            const containerId = searchType === 'raw' ? 'raw-materials-container' : 'packaging-materials-container';
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = `
+                    <div class="col-span-full flex justify-center items-center py-12">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span class="ml-2 text-gray-600">Memperbarui tampilan...</span>
+                    </div>
+                `;
+            }
+            
+            performAjaxSearch(searchType, searchTerm, this.value);
+        });
     });
 });
 
@@ -222,15 +244,8 @@ function setupAjaxSearch() {
             const searchTerm = this.value;
             clearTimeout(searchTimeoutRaw);
             searchTimeoutRaw = setTimeout(() => {
-                performAjaxSearch('raw', searchTerm, bahanLimit ? bahanLimit.value : 6);
-            }, 500);
-        });
-    }
-
-    if (bahanLimit) {
-        bahanLimit.addEventListener('change', function() {
-            const searchTerm = searchRaw ? searchRaw.value : '';
-            performAjaxSearch('raw', searchTerm, this.value);
+                performAjaxSearch('raw', searchTerm, bahanLimit ? bahanLimit.value : defaultLimit);
+            }, 300); // Reduced timeout for faster response
         });
     }
 
@@ -243,15 +258,8 @@ function setupAjaxSearch() {
             const searchTerm = this.value;
             clearTimeout(searchTimeoutKemasan);
             searchTimeoutKemasan = setTimeout(() => {
-                performAjaxSearch('kemasan', searchTerm, kemasanLimit ? kemasanLimit.value : 6);
-            }, 500);
-        });
-    }
-
-    if (kemasanLimit) {
-        kemasanLimit.addEventListener('change', function() {
-            const searchTerm = searchKemasan ? searchKemasan.value : '';
-            performAjaxSearch('kemasan', searchTerm, this.value);
+                performAjaxSearch('kemasan', searchTerm, kemasanLimit ? kemasanLimit.value : defaultLimit);
+            }, 300); // Reduced timeout for faster response
         });
     }
 }
@@ -276,13 +284,16 @@ function performAjaxSearch(type, searchTerm, limit) {
     // Simpan posisi scroll sebelum AJAX
     saveScrollPosition();
 
-    // Show loading
-    container.innerHTML = `
-        <div class="col-span-full flex justify-center items-center py-12">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span class="ml-2 text-gray-600">Mencari...</span>
-        </div>
-    `;
+    // Show loading dengan pesan yang lebih spesifik
+    const loadingMessage = searchTerm ? 'Mencari...' : 'Memuat data...';
+    if (container.innerHTML.indexOf('animate-spin') === -1) {
+        container.innerHTML = `
+            <div class="col-span-full flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span class="ml-2 text-gray-600">${loadingMessage}</span>
+            </div>
+        `;
+    }
 
     // Build URL parameters
     const params = new URLSearchParams();
@@ -299,9 +310,36 @@ function performAjaxSearch(type, searchTerm, limit) {
 
     // Perform AJAX request
     fetch(`/cornerbites-sia/pages/bahan_baku.php?${params.toString()}`)
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
         .then(html => {
-            container.innerHTML = html;
+            // Parse response to separate HTML content from scripts
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Extract and execute scripts
+            const scripts = tempDiv.querySelectorAll('script');
+            scripts.forEach(script => {
+                if (script.textContent) {
+                    try {
+                        eval(script.textContent);
+                    } catch (e) {
+                        console.error('Error executing script:', e);
+                    }
+                }
+                script.remove();
+            });
+            
+            // Update container with remaining HTML
+            container.innerHTML = tempDiv.innerHTML;
+
+            // Log untuk debugging
+            console.log(`Updated ${type} with limit: ${limit}, search: "${searchTerm}"`);
+
             // Restore posisi scroll setelah konten dimuat
             setTimeout(() => {
                 restoreScrollPosition();
@@ -311,7 +349,11 @@ function performAjaxSearch(type, searchTerm, limit) {
             console.error('Error:', error);
             container.innerHTML = `
                 <div class="col-span-full text-center py-12 text-red-600">
-                    Terjadi kesalahan saat mencari data.
+                    <svg class="w-8 h-8 mx-auto mb-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p>Terjadi kesalahan saat memuat data.</p>
+                    <p class="text-sm mt-1">Silakan coba lagi.</p>
                 </div>
             `;
             // Restore posisi scroll meskipun ada error
@@ -321,6 +363,15 @@ function performAjaxSearch(type, searchTerm, limit) {
         });
 }
 
+// Function to update total count display
+function updateTotalCount(elementId, count) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = count;
+    }
+}
+
 // Make functions global
 window.editBahanBaku = editBahanBaku;
 window.resetForm = resetForm;
+window.updateTotalCount = updateTotalCount;

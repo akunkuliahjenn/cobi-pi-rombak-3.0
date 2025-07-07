@@ -1,4 +1,3 @@
-
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/db.php';
@@ -79,11 +78,18 @@ try {
                 break;
 
             case 'add_manual_overhead':
+                // Debug logging
+                error_log("Processing add_manual_overhead for product_id: " . $product_id);
+                error_log("POST data: " . print_r($_POST, true));
+
                 $overhead_id = $_POST['overhead_id'] ?? null;
 
                 if (!$overhead_id) {
-                    throw new Exception('ID overhead tidak ditemukan');
+                    error_log("Error: overhead_id is missing from POST data");
+                    throw new Exception('ID overhead tidak ditemukan. Data yang diterima: ' . print_r($_POST, true));
                 }
+
+                error_log("Overhead ID received: " . $overhead_id);
 
                 // Check if already exists
                 $checkStmt = $conn->prepare("SELECT id FROM product_overhead_manual WHERE product_id = ? AND overhead_id = ?");
@@ -136,8 +142,12 @@ try {
                 $success = $stmt->execute([$product_id, $overhead_id, $overhead['amount'], $finalAmount]);
 
                 if (!$success) {
-                    throw new Exception('Gagal menyimpan data overhead ke database');
+                    $errorInfo = $stmt->errorInfo();
+                    error_log("Database error inserting overhead: " . print_r($errorInfo, true));
+                    throw new Exception('Gagal menyimpan data overhead ke database: ' . $errorInfo[2]);
                 }
+
+                error_log("Successfully inserted overhead for product " . $product_id);
 
                 $_SESSION['resep_message'] = [
                     'text' => 'Overhead "' . $overhead['name'] . '" berhasil ditambahkan ke resep',

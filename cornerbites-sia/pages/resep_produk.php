@@ -1,3 +1,4 @@
+
 <?php
 // pages/resep_produk.php
 // Halaman untuk mengelola resep produk (komposisi bahan baku/kemasan untuk setiap produk jadi) dengan kalkulasi HPP
@@ -435,7 +436,8 @@ try {
                                     <div class="flex items-center">
                                         <div class="p-2 bg-indigo-100 rounded-lg mr-3">
                                             <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>                                            </svg>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                            </svg>
                                         </div>
                                         <div>
                                             <h3 class="text-xs font-bold text-indigo-800 mb-1">HPP per Unit</h3>
@@ -696,7 +698,7 @@ try {
                             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                                 <div class="flex">
                                     <svg class="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     <div>
                                         <h4 class="text-sm font-medium text-blue-800">Catatan Penting</h4>
@@ -781,7 +783,7 @@ try {
                                     <div class="space-y-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Posisi Tenaga Kerja</label>
-                                            <select name="labor_id" id="manual-labor-select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" required>
+                                            <select name="labor_id" id="manual-labor-select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
                                                 <option value="">-- Pilih Posisi --</option>
                                                 <?php
                                                 try {
@@ -1132,13 +1134,11 @@ function switchManualTab(tabType) {
         if (overheadSelect) {
             overheadSelect.required = true;
             overheadSelect.disabled = false;
-            overheadSelect.name = 'overhead_id';
         }
 
         if (laborSelect) {
             laborSelect.required = false;
             laborSelect.disabled = true;
-            laborSelect.name = '';
         }
     } else {
         document.getElementById('manual-tab-labor').classList.add('border-purple-600', 'text-purple-600');
@@ -1155,13 +1155,11 @@ function switchManualTab(tabType) {
         if (laborSelect) {
             laborSelect.required = true;
             laborSelect.disabled = false;
-            laborSelect.name = 'labor_id';
         }
 
         if (overheadSelect) {
             overheadSelect.required = false;
             overheadSelect.disabled = true;
-            overheadSelect.name = '';
         }
     }
     
@@ -1268,17 +1266,17 @@ function deleteManualLabor(manualId) {
 
         const idInput = document.createElement('input');
         idInput.type = 'hidden';
-        idInput.name = 'labor_manual_id';
+        idInput.name = 'manual_id';
         idInput.value = manualId;
 
-        const productIdInput = document.createElement('input');
-        productIdInput.type = 'hidden';
-        productIdInput.name = 'product_id';
-        productIdInput.value = '<?php echo htmlspecialchars($selectedProductId); ?>';
+        const productInput = document.createElement('input');
+        productInput.type = 'hidden';
+        productInput.name = 'product_id';
+        productInput.value = '<?php echo htmlspecialchars($selectedProductId); ?>';
 
         form.appendChild(actionInput);
         form.appendChild(idInput);
-        form.appendChild(productIdInput);
+        form.appendChild(productInput);
         document.body.appendChild(form);
         form.submit();
     }
@@ -1297,124 +1295,84 @@ function deleteManualOverhead(manualId) {
 
         const idInput = document.createElement('input');
         idInput.type = 'hidden';
-        idInput.name = 'overhead_manual_id';
+        idInput.name = 'manual_id';
         idInput.value = manualId;
 
-        const productIdInput = document.createElement('input');
-        productIdInput.type = 'hidden';
-        productIdInput.name = 'product_id';
-        productIdInput.value = '<?php echo htmlspecialchars($selectedProductId); ?>';
+        const productInput = document.createElement('input');
+        productInput.type = 'hidden';
+        productInput.name = 'product_id';
+        productInput.value = '<?php echo htmlspecialchars($selectedProductId); ?>';
 
         form.appendChild(actionInput);
         form.appendChild(idInput);
-        form.appendChild(productIdInput);
+        form.appendChild(productInput);
         document.body.appendChild(form);
         form.submit();
     }
 }
 
-function formatRupiah(element, hiddenField) {
+// Function to format currency display
+function formatRupiah(element, hiddenInputId) {
     let value = element.value.replace(/[^\d]/g, '');
     if (value) {
-        element.value = new Intl.NumberFormat('id-ID').format(value);
-        if (hiddenField) {
-            document.getElementById(hiddenField).value = value;
-        }
+        let formatted = parseInt(value).toLocaleString('id-ID');
+        element.value = formatted;
+        document.getElementById(hiddenInputId).value = value;
     } else {
-        element.value = '';
-        if (hiddenField) {
-            document.getElementById(hiddenField).value = '';
-        }
+        document.getElementById(hiddenInputId).value = '';
     }
 }
 
-function saveScrollPosition() {
-    currentScrollPosition = window.pageYOffset;
-    sessionStorage.setItem('resepScrollPosition', currentScrollPosition);
-}
-
-function restoreScrollPosition() {
-    const savedPosition = sessionStorage.getItem('resepScrollPosition');
-    if (savedPosition) {
-        setTimeout(() => {
-            window.scrollTo(0, parseInt(savedPosition));
-            sessionStorage.removeItem('resepScrollPosition');
-        }, 100);
-    }
-}
-
-function performSearch() {
-    saveScrollPosition();
-
-    const searchTerm = document.getElementById('search_recipe').value;
-    const limit = document.getElementById('recipe_limit').value;
-    const currentUrl = new URL(window.location.href);
-
-    if (searchTerm) {
-        currentUrl.searchParams.set('search_recipe', searchTerm);
-    } else {
-        currentUrl.searchParams.delete('search_recipe');
-    }
-
-    currentUrl.searchParams.set('recipe_limit', limit);
-    currentUrl.searchParams.set('recipe_page', 1);
-
-    window.location.href = currentUrl.toString();
-}
-
-// Initialize when DOM is loaded
+// Real-time search functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Restore scroll position after page load
-    restoreScrollPosition();
-
-    // Initialize tabs
-    switchRecipeTab('bahan');
-    switchManualTab('overhead');
-
-    // Setup search functionality with debouncing
     const searchInput = document.getElementById('search_recipe');
     const limitSelect = document.getElementById('recipe_limit');
 
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(performSearch, 500);
-        });
-    }
+    if (searchInput && limitSelect) {
+        function applyFilters() {
+            const currentParams = new URLSearchParams(window.location.search);
+            const searchValue = searchInput.value.trim();
+            const limitValue = limitSelect.value;
 
-    if (limitSelect) {
-        limitSelect.addEventListener('change', performSearch);
-    }
-
-    // Add form validation for manual cost form
-    const manualForm = document.getElementById('manual-cost-form');
-    if (manualForm) {
-        manualForm.addEventListener('submit', function(e) {
-            const action = document.getElementById('manual-action').value;
-            console.log('Form submitted with action:', action);
-            
-            if (action === 'add_manual_overhead') {
-                const overheadSelect = document.getElementById('manual-overhead-select');
-                if (!overheadSelect.value) {
-                    e.preventDefault();
-                    alert('Silakan pilih overhead yang akan ditambahkan');
-                    return false;
-                }
-                console.log('Overhead selected:', overheadSelect.value);
-            } else if (action === 'add_manual_labor') {
-                const laborSelect = document.getElementById('manual-labor-select');
-                if (!laborSelect.value) {
-                    e.preventDefault();
-                    alert('Silakan pilih posisi tenaga kerja yang akan ditambahkan');
-                    return false;
-                }
-                console.log('Labor selected:', laborSelect.value);
+            // Update search parameter
+            if (searchValue) {
+                currentParams.set('search_recipe', searchValue);
+            } else {
+                currentParams.delete('search_recipe');
             }
-        });
+
+            // Update limit parameter
+            currentParams.set('recipe_limit', limitValue);
+
+            // Reset to first page when search changes
+            currentParams.set('recipe_page', '1');
+
+            // Redirect with new parameters
+            window.location.href = 'resep_produk.php?' + currentParams.toString();
+        }
+
+        // Search input with debounce
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    applyFilters();
+                }, 500);
+            });
+        }
+
+        // Limit select immediate change
+        if (limitSelect) {
+            limitSelect.addEventListener('change', applyFilters);
+        }
     }
 
-    console.log('Resep Produk page loaded and initialized');
+    // Initialize with default tab states
+    switchRecipeTab('bahan');
+    switchManualTab('overhead');
+
+    console.log('Resep Produk page fully loaded');
 });
 </script>
-</body>
-</html>
+
+<?php include_once __DIR__ . '/../includes/footer.php'; ?>
