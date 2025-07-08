@@ -58,7 +58,29 @@ try {
                 $_SESSION['bahan_baku_message'] = ['text' => 'Gagal menambahkan bahan baku baru.', 'type' => 'error'];
             }
         }
-        header("Location: /cornerbites-sia/pages/bahan_baku.php");
+        // Redirect dengan pesan sukses
+        $_SESSION['bahan_baku_message'] = [
+            'text' => 'Bahan baku berhasil ditambahkan!',
+            'type' => 'success'
+        ];
+
+        // Build redirect URL with preserved limit parameters
+        $redirectUrl = "../pages/bahan_baku.php";
+        $params = [];
+
+        // Preserve limit parameters if they exist in previous request
+        if (isset($_POST['bahan_limit']) && !empty($_POST['bahan_limit'])) {
+            $params['bahan_limit'] = $_POST['bahan_limit'];
+        }
+        if (isset($_POST['kemasan_limit']) && !empty($_POST['kemasan_limit'])) {
+            $params['kemasan_limit'] = $_POST['kemasan_limit'];
+        }
+
+        if (!empty($params)) {
+            $redirectUrl .= '?' . http_build_query($params);
+        }
+
+        header("Location: $redirectUrl");
         exit();
 
     } elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {

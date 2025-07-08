@@ -6,8 +6,14 @@ const typeOptions = ['bahan', 'kemasan'];
 const validLimits = [6, 12, 18, 24, 30];
 const defaultLimit = 6;
 
+// Variables untuk menyimpan posisi scroll
+let currentScrollPosition = 0;
+
 // Currency formatting for price input
 document.addEventListener('DOMContentLoaded', function() {
+    // Restore limit states on page load
+    restoreLimitStates();
+    
     const priceInput = document.getElementById('purchase_price_per_unit');
 
     if (priceInput) {
@@ -23,6 +29,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const form = priceInput.closest('form');
         if (form) {
             form.addEventListener('submit', function(e) {
+                // Save current limit states before form submission
+                saveLimitStates();
+                
+                // Update hidden fields with current limit values
+                const bahanLimit = document.getElementById('bahan_limit');
+                const kemasanLimit = document.getElementById('kemasan_limit');
+                const hiddenBahanLimit = document.getElementById('hidden_bahan_limit');
+                const hiddenKemasanLimit = document.getElementById('hidden_kemasan_limit');
+                
+                if (bahanLimit && hiddenBahanLimit) {
+                    hiddenBahanLimit.value = bahanLimit.value;
+                }
+                if (kemasanLimit && hiddenKemasanLimit) {
+                    hiddenKemasanLimit.value = kemasanLimit.value;
+                }
+                
                 // Convert formatted price back to number
                 const currentValue = priceInput.value.replace(/[^\d]/g, '');
                 priceInput.value = currentValue;
@@ -123,7 +145,18 @@ function formatNumber(num) {
     return parseInt(num).toLocaleString('id-ID');
 }
 
+function saveScrollPosition() {
+    currentScrollPosition = window.pageYOffset;
+}
+
+function restoreScrollPosition() {
+    window.scrollTo(0, currentScrollPosition);
+}
+
 function editBahanBaku(material) {
+    // Save current limit states before editing
+    saveLimitStates();
+    
     // Scroll to form first
     const formTitle = document.getElementById('form-title');
     if (formTitle) {
@@ -197,6 +230,9 @@ function editBahanBaku(material) {
 }
 
 function resetForm() {
+    // Save current limit states before reset
+    saveLimitStates();
+    
     document.getElementById('bahan_baku_id').value = '';
     document.getElementById('name').value = '';
     document.getElementById('brand').value = '';
@@ -266,17 +302,6 @@ function setupAjaxSearch() {
     }
 }
 
-// Variables untuk menyimpan posisi scroll
-let currentScrollPosition = 0;
-
-function saveScrollPosition() {
-    currentScrollPosition = window.pageYOffset;
-}
-
-function restoreScrollPosition() {
-    window.scrollTo(0, currentScrollPosition);
-}
-
 function performAjaxSearch(type, searchTerm, limit) {
     const containerId = type === 'raw' ? 'raw-materials-container' : 'packaging-materials-container';
     const container = document.getElementById(containerId);
@@ -290,7 +315,7 @@ function performAjaxSearch(type, searchTerm, limit) {
     const loadingMessage = searchTerm ? 'Mencari...' : 'Memuat data...';
     if (container.innerHTML.indexOf('animate-spin') === -1) {
         container.innerHTML = `
-            <div class="col-span-full flex justify-center items-center py-12">
+            <div class="flex justify-center items-center py-12">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 <span class="ml-2 text-gray-600">${loadingMessage}</span>
             </div>
@@ -318,57 +343,42 @@ function performAjaxSearch(type, searchTerm, limit) {
             }
             return response.text();
         })
-        .then(html => {
-            // Parse response to separate HTML content from scripts
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html;
+        .then(data => {
+            container.innerHTML = data;
 
-            // Extract and execute scripts
-            const scripts = tempDiv.querySelectorAll('script');
-            scripts.forEach(script => {
-                if (script.textContent) {
-                    try {
-                        eval(script.textContent);
-                    } catch (e) {
-                        console.error('Error executing script:', e);
-                    }
-                }
-                script.remove();
-            });
-
-            // Update container with remaining HTML
-            container.innerHTML = tempDiv.innerHTML;
-
-            // Log untuk debugging
-            console.log(`Updated ${type} with limit: ${limit}, search: "${searchTerm}"`);
-
-            // Restore posisi scroll setelah konten dimuat
+            // Wait a bit for DOM to update, then check pagination
             setTimeout(() => {
-                restoreScrollPosition();
-            }, 10);
+                checkAndHidePagination(type, limit);
+            }, 100);
+
+            // Restore scroll position
+            restoreScrollPosition();
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('AJAX Error:', error);
             container.innerHTML = `
-                <div class="col-span-full text-center py-12 text-red-600">
-                    <svg class="w-8 h-8 mx-auto mb-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <div class="text-center py-12 text-red-600">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
                     </svg>
-                    <p>Terjadi kesalahan saat memuat data.</p>
-                    <p class="text-sm mt-1">Silakan coba lagi.</p>
+                    <p class="text-lg font-medium">Terjadi kesalahan saat memuat data</p>
+                    <p class="text-sm">Silakan refresh halaman atau coba lagi nanti</p>
                 </div>
             `;
-            // Restore posisi scroll meskipun ada error
-            setTimeout(() => {
-                restoreScrollPosition();
-            }, 10);
         });
 }
 
-// Update pagination info for raw materials
-function updateRawPaginationInfo(totalCount, limit) {
-    // Hide pagination if all data fits in one page
-    const paginationContainer = document.querySelector('#content-bahan .border-t.border-gray-200.pt-6');
+function hidePaginationIfNotNeeded(tabType, limit) {
+    const totalCountElement = document.getElementById(`total-${tabType}-count`);
+    if (!totalCountElement) return;
+
+    const totalCount = parseInt(totalCountElement.textContent) || 0;
+    const currentTab = document.getElementById(`content-${tabType}`);
+    if (!currentTab) return;
+
+    // Find pagination container in current tab
+    const paginationContainer = currentTab.querySelector('.flex.items-center.justify-between.border-t');
+
     if (paginationContainer) {
         if (totalCount <= limit) {
             paginationContainer.style.display = 'none';
@@ -376,20 +386,61 @@ function updateRawPaginationInfo(totalCount, limit) {
             paginationContainer.style.display = 'flex';
         }
     }
+}
+
+function checkAndHidePagination(type, limit) {
+    // Map type to the correct element ID
+    const tabType = type === 'raw' ? 'raw' : 'kemasan';
+    const totalCountElement = document.getElementById(`total-${tabType}-count`);
+    
+    if (!totalCountElement) {
+        console.log('Total count element not found for:', tabType);
+        return;
+    }
+
+    const totalCount = parseInt(totalCountElement.textContent) || 0;
+    const limitInt = parseInt(limit);
+    
+    console.log(`Checking pagination for ${tabType}: total=${totalCount}, limit=${limitInt}`);
+    
+    // Find the correct content area
+    const contentArea = document.getElementById(`content-${tabType === 'raw' ? 'bahan' : 'kemasan'}`);
+    if (!contentArea) {
+        console.log('Content area not found for:', tabType);
+        return;
+    }
+
+    // Find pagination container
+    const paginationContainer = contentArea.querySelector('.flex.items-center.justify-between.border-t');
+    
+    if (paginationContainer) {
+        if (totalCount <= limitInt) {
+            console.log(`Hiding pagination: ${totalCount} <= ${limitInt}`);
+            paginationContainer.style.display = 'none';
+        } else {
+            console.log(`Showing pagination: ${totalCount} > ${limitInt}`);
+            paginationContainer.style.display = 'flex';
+        }
+    } else {
+        console.log('Pagination container not found');
+    }
+}
+
+// Update pagination info for raw materials
+function updateRawPaginationInfo(totalCount, limit) {
+    // Use the centralized function to check and hide pagination
+    setTimeout(() => {
+        checkAndHidePagination('raw', limit);
+    }, 50);
     console.log('Raw materials pagination updated:', { totalCount, limit });
 }
 
 // Update pagination info for kemasan
 function updateKemasanPaginationInfo(totalCount, limit) {
-    // Hide pagination if all data fits in one page
-    const paginationContainer = document.querySelector('#content-kemasan .border-t.border-gray-200.pt-6');
-    if (paginationContainer) {
-        if (totalCount <= limit) {
-            paginationContainer.style.display = 'none';
-        } else {
-            paginationContainer.style.display = 'flex';
-        }
-    }
+    // Use the centralized function to check and hide pagination
+    setTimeout(() => {
+        checkAndHidePagination('kemasan', limit);
+    }, 50);
     console.log('Kemasan pagination updated:', { totalCount, limit });
 }
 
@@ -468,9 +519,56 @@ function updateTabBadges(rawCount, kemasanCount) {
     }
 }
 
+// Functions to save and restore limit states
+function saveLimitStates() {
+    const bahanLimit = document.getElementById('bahan_limit');
+    const kemasanLimit = document.getElementById('kemasan_limit');
+    
+    if (bahanLimit) {
+        localStorage.setItem('bahan_limit_state', bahanLimit.value);
+    }
+    if (kemasanLimit) {
+        localStorage.setItem('kemasan_limit_state', kemasanLimit.value);
+    }
+    
+    // Also save current active tab
+    const activeTab = document.querySelector('[aria-selected="true"]');
+    if (activeTab) {
+        const tabType = activeTab.id.includes('bahan') ? 'bahan' : 'kemasan';
+        localStorage.setItem('active_tab_state', tabType);
+    }
+}
+
+function restoreLimitStates() {
+    const bahanLimit = document.getElementById('bahan_limit');
+    const kemasanLimit = document.getElementById('kemasan_limit');
+    
+    if (bahanLimit && localStorage.getItem('bahan_limit_state')) {
+        bahanLimit.value = localStorage.getItem('bahan_limit_state');
+    }
+    if (kemasanLimit && localStorage.getItem('kemasan_limit_state')) {
+        kemasanLimit.value = localStorage.getItem('kemasan_limit_state');
+    }
+    
+    // Restore active tab
+    const activeTabState = localStorage.getItem('active_tab_state');
+    if (activeTabState) {
+        switchTab(activeTabState);
+    }
+}
+
+function clearLimitStates() {
+    localStorage.removeItem('bahan_limit_state');
+    localStorage.removeItem('kemasan_limit_state');
+    localStorage.removeItem('active_tab_state');
+}
+
 // Make functions global
 window.editBahanBaku = editBahanBaku;
 window.resetForm = resetForm;
 window.updateTotalCount = updateTotalCount;
 window.switchTab = switchTab;
 window.updateTabBadges = updateTabBadges;
+window.saveLimitStates = saveLimitStates;
+window.restoreLimitStates = restoreLimitStates;
+window.clearLimitStates = clearLimitStates;

@@ -1,4 +1,3 @@
-
 <?php
 // pages/bahan_baku.php
 // Halaman manajemen data bahan baku (CRUD) dengan pagination dan pencarian
@@ -47,47 +46,58 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             $stmtRaw->execute();
             $rawMaterials = $stmtRaw->fetchAll(PDO::FETCH_ASSOC);
 
-            // Output raw materials grid
-            if (!empty($rawMaterials)):
-                foreach ($rawMaterials as $material): ?>
-                    <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-white">
-                        <div class="flex justify-between items-start mb-3">
-                            <div class="flex-1">
-                                <h3 class="font-bold text-gray-800"><?php echo htmlspecialchars($material['name']); ?></h3>
-                                <?php if (!empty($material['brand'])): ?>
-                                    <p class="text-xs text-gray-500">Merek: <?php echo htmlspecialchars($material['brand']); ?></p>
-                                <?php endif; ?>
-                            </div>
-                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Bahan</span>
-                        </div>
-                        <div class="text-sm text-gray-600 space-y-2">
-                            <div class="flex justify-between">
-                                <span>Harga Per Kemasan:</span>
-                                <span class="font-semibold">Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?></span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span>Ukuran Kemasan:</span>
-                                <span><?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex items-center space-x-2">
-                            <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                                Edit
-                            </button>
-                            <a href="../process/simpan_bahan_baku.php?action=delete&id=<?php echo $material['id']; ?>" class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200" onclick="return confirm('Hapus bahan ini?');">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                                Hapus
-                            </a>
-                        </div>
-                    </div>
-                <?php endforeach;
-            else: ?>
-                <div class="col-span-full text-center py-12 text-gray-500">
+            // Output raw materials table
+            if (!empty($rawMaterials)): ?>
+                <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Bahan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Kemasan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga (Rp)</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <?php foreach ($rawMaterials as $material): ?>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($material['name']); ?></div>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Bahan</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <?php echo !empty($material['brand']) ? htmlspecialchars($material['brand']) : '-'; ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                                    Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                    <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                        Edit
+                                    </button>
+                                    <a href="../process/simpan_bahan_baku.php?action=delete&id=<?php echo $material['id']; ?>" class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200" onclick="return confirm('Hapus bahan ini?');">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        Hapus
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <div class="text-center py-12 text-gray-500">
                     <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                     </svg>
@@ -99,6 +109,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             // Add pagination info for AJAX
             echo '<script>updateRawPaginationInfo(' . $totalRawCount . ', ' . $rawMaterialsLimit . ');</script>';
             echo '<script>updateTotalCount("total-raw-count", ' . $totalRawCount . ');</script>';
+
+            // Hide pagination if total items fit in current limit
+            echo '<script>setTimeout(() => { checkAndHidePagination("raw", ' . $rawMaterialsLimit . '); }, 100);</script>';
 
             // Update tab badge for bahan
             $stmtBadgeBahan = $conn->prepare("SELECT COUNT(*) FROM raw_materials WHERE type = 'bahan'");
@@ -145,47 +158,58 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             $stmtPackaging->execute();
             $packagingMaterials = $stmtPackaging->fetchAll(PDO::FETCH_ASSOC);
 
-            // Output packaging materials grid
-            if (!empty($packagingMaterials)):
-                foreach ($packagingMaterials as $material): ?>
-                    <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-white">
-                        <div class="flex justify-between items-start mb-3">
-                            <div class="flex-1">
-                                <h3 class="font-bold text-gray-800"><?php echo htmlspecialchars($material['name']); ?></h3>
-                                <?php if (!empty($material['brand'])): ?>
-                                    <p class="text-xs text-gray-500">Merek: <?php echo htmlspecialchars($material['brand']); ?></p>
-                                <?php endif; ?>
-                            </div>
-                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Kemasan</span>
-                        </div>
-                        <div class="text-sm text-gray-600 space-y-2">
-                            <div class="flex justify-between">
-                                <span>Harga Per Kemasan:</span>
-                                <span class="font-semibold">Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?></span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span>Ukuran Kemasan:</span>
-                                <span><?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex items-center space-x-2">
-                            <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                                Edit
-                            </button>
-                            <a href="../process/simpan_bahan_baku.php?action=delete&id=<?php echo $material['id']; ?>" class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200" onclick="return confirm('Hapus kemasan ini?');">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                                Hapus
-                            </a>
-                        </div>
-                    </div>
-                <?php endforeach;
-            else: ?>
-                <div class="col-span-full text-center py-12 text-gray-500">
+            // Output packaging materials table
+            if (!empty($packagingMaterials)): ?>
+                <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kemasan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Kemasan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga (Rp)</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <?php foreach ($packagingMaterials as $material): ?>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($material['name']); ?></div>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Kemasan</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <?php echo !empty($material['brand']) ? htmlspecialchars($material['brand']) : '-'; ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                                    Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                    <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                        Edit
+                                    </button>
+                                    <a href="../process/simpan_bahan_baku.php?action=delete&id=<?php echo $material['id']; ?>" class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200" onclick="return confirm('Hapus kemasan ini?');">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        Hapus
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <div class="text-center py-12 text-gray-500">
                     <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                     </svg>
@@ -197,6 +221,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == '1') {
             // Add pagination info for AJAX
             echo '<script>updateKemasanPaginationInfo(' . $totalKemasanCount . ', ' . $packagingMaterialsLimit . ');</script>';
             echo '<script>updateTotalCount("total-kemasan-count", ' . $totalKemasanCount . ');</script>';
+
+            // Hide pagination if total items fit in current limit
+            echo '<script>setTimeout(() => { checkAndHidePagination("kemasan", ' . $packagingMaterialsLimit . '); }, 100);</script>';
 
             // Update tab badge for kemasan
             $stmtBadgeKemasan = $conn->prepare("SELECT COUNT(*) FROM raw_materials WHERE type = 'kemasan'");
@@ -319,7 +346,7 @@ try {
                        FROM raw_materials rm
                        WHERE rm.type = 'kemasan'";
     if (!empty($searchQueryPackaging)) {
-        $queryPackaging .= " AND rm.name LIKE :search_kemasan_term";
+        $queryPackaging .= " AND name LIKE :search_kemasan_term";
     }
     $queryPackaging .= " ORDER BY rm.name ASC LIMIT :limit OFFSET :offset";
 
@@ -394,6 +421,8 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
 
                     <form action="../process/simpan_bahan_baku.php" method="POST">
                         <input type="hidden" name="bahan_baku_id" id="bahan_baku_id">
+                        <input type="hidden" name="bahan_limit" id="hidden_bahan_limit">
+                        <input type="hidden" name="kemasan_limit" id="hidden_kemasan_limit">
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -437,7 +466,7 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                                 <label for="purchase_price_per_unit" class="block text-gray-700 text-sm font-semibold mb-2" id="purchase_price_label">Harga Beli Per Kemasan</label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">Rp</span>
-                                    <input type="text" id="purchase_price_per_unit" name="purchase_price_per_unit" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="15000" required>
+                                    <input type="text" id="purchase_price_per_unit" name="purchase_price_per_unit" class="w-full pl-10 pr-4 py-3 border bordergray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="15000" required>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-1" id="purchase_price_help">Harga per kemasan saat pembelian</p>
                             </div>
@@ -553,48 +582,59 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                             </div>
                         </div>
 
-                        <!-- Grid Bahan Baku -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6" id="raw-materials-container">
+                        <!-- Table Bahan Baku -->
+                        <div class="overflow-x-auto mb-6" id="raw-materials-container">
                             <?php if (!empty($rawMaterials)): ?>
-                                <?php foreach ($rawMaterials as $material): ?>
-                                    <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-white">
-                                        <div class="flex justify-between items-start mb-3">
-                                            <div class="flex-1">
-                                                <h3 class="font-bold text-gray-800"><?php echo htmlspecialchars($material['name']); ?></h3>
-                                                <?php if (!empty($material['brand'])): ?>
-                                                    <p class="text-xs text-gray-500">Merek: <?php echo htmlspecialchars($material['brand']); ?></p>
-                                                <?php endif; ?>
-                                            </div>
-                                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Bahan</span>
-                                        </div>
-                                        <div class="text-sm text-gray-600 space-y-2">
-                                            <div class="flex justify-between">
-                                                <span>Harga Per Kemasan:</span>
-                                                <span class="font-semibold">Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?></span>
-                                            </div>
-                                            <div class="flex justify-between">
-                                                <span>Ukuran Kemasan:</span>
-                                                <span><?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
-                                            </div>
-                                        </div>
-                                        <div class="mt-4 flex items-center space-x-2">
-                                            <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                </svg>
-                                                Edit
-                                            </button>
-                                            <a href="../process/simpan_bahan_baku.php?action=delete&id=<?php echo $material['id']; ?>" class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200" onclick="return confirm('Hapus bahan ini?');">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                                Hapus
-                                            </a>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
+                                <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Bahan</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Kemasan</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga (Rp)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <?php foreach ($rawMaterials as $material): ?>
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div>
+                                                            <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($material['name']); ?></div>
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Bahan</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <?php echo !empty($material['brand']) ? htmlspecialchars($material['brand']) : '-'; ?>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    <?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                                                    Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                    <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                        </svg>
+                                                        Edit
+                                                    </button>
+                                                    <a href="../process/simpan_bahan_baku.php?action=delete&id=<?php echo $material['id']; ?>" class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200" onclick="return confirm('Hapus bahan ini?');">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                        </svg>
+                                                        Hapus
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
                             <?php else: ?>
-                                <div class="col-span-full text-center py-12 text-gray-500">
+                                <div class="text-center py-12 text-gray-500">
                                     <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                     </svg>
@@ -605,7 +645,7 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                         </div>
 
                         <!-- Pagination Bahan Baku -->
-                        <?php if ($totalRawMaterialsPages > 1): ?>
+                        <?php if ($totalRawMaterialsRows > $rawMaterialsLimit): ?>
                             <div class="flex items-center justify-between border-t border-gray-200 pt-6">
                                 <div class="flex-1 flex justify-between sm:hidden">
                                     <?php if ($rawMaterialsPage > 1): ?>
@@ -721,48 +761,59 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                             </div>
                         </div>
 
-                        <!-- Grid Kemasan -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6" id="packaging-materials-container">
+                        <!-- Table Kemasan -->
+                        <div class="overflow-x-auto mb-6" id="packaging-materials-container">
                             <?php if (!empty($packagingMaterials)): ?>
-                                <?php foreach ($packagingMaterials as $material): ?>
-                                    <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-white">
-                                        <div class="flex justify-between items-start mb-3">
-                                            <div class="flex-1">
-                                                <h3 class="font-bold text-gray-800"><?php echo htmlspecialchars($material['name']); ?></h3>
-                                                <?php if (!empty($material['brand'])): ?>
-                                                    <p class="text-xs text-gray-500">Merek: <?php echo htmlspecialchars($material['brand']); ?></p>
-                                                <?php endif; ?>
-                                            </div>
-                                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Kemasan</span>
-                                        </div>
-                                        <div class="text-sm text-gray-600 space-y-2">
-                                            <div class="flex justify-between">
-                                                <span>Harga Per Kemasan:</span>
-                                                <span class="font-semibold">Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?></span>
-                                            </div>
-                                            <div class="flex justify-between">
-                                                <span>Ukuran Kemasan:</span>
-                                                <span><?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?></span>
-                                            </div>
-                                        </div>
-                                        <div class="mt-4 flex items-center space-x-2">
-                                            <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                </svg>
-                                                Edit
-                                            </button>
-                                            <a href="../process/simpan_bahan_baku.php?action=delete&id=<?php echo $material['id']; ?>" class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200" onclick="return confirm('Hapus kemasan ini?');">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                                Hapus
-                                            </a>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
+                                <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kemasan</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Kemasan</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga (Rp)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <?php foreach ($packagingMaterials as $material): ?>
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div>
+                                                            <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($material['name']); ?></div>
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Kemasan</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <?php echo !empty($material['brand']) ? htmlspecialchars($material['brand']) : '-'; ?>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    <?php echo number_format($material['default_package_quantity'], ($material['default_package_quantity'] == floor($material['default_package_quantity'])) ? 0 : 1, ',', '.'); ?> <?php echo htmlspecialchars($material['unit']); ?>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                                                    Rp <?php echo number_format($material['purchase_price_per_unit'], 0, ',', '.'); ?>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                    <button onclick="editBahanBaku(<?php echo htmlspecialchars(json_encode($material)); ?>)" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                        </svg>
+                                                        Edit
+                                                    </button>
+                                                    <a href="../process/simpan_bahan_baku.php?action=delete&id=<?php echo $material['id']; ?>" class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200" onclick="return confirm('Hapus kemasan ini?');">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                        </svg>
+                                                        Hapus
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
                             <?php else: ?>
-                                <div class="col-span-full text-center py-12 text-gray-500">
+                                <div class="text-center py-12 text-gray-500">
                                     <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                     </svg>
@@ -773,7 +824,7 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
                         </div>
 
                         <!-- Pagination Kemasan -->
-                        <?php if ($totalPackagingMaterialsPages > 1): ?>
+                        <?php if ($totalPackagingMaterialsRows > $packagingMaterialsLimit): ?>
                             <div class="flex items-center justify-between border-t border-gray-200 pt-6">
                                 <div class="flex-1 flex justify-between sm:hidden">
                                     <?php if ($packagingMaterialsPage > 1): ?>
@@ -847,6 +898,16 @@ function buildPaginationUrl($baseUrl, $paramsToUpdate) {
 
 <script src="../assets/js/bahan_baku.js"></script>
 <script>
+// Clear limit states after successful operation (to prevent indefinite persistence)
+<?php if (!empty($message) && $message_type === 'success'): ?>
+    // Clear states after successful operation
+    setTimeout(() => {
+        if (typeof clearLimitStates === 'function') {
+            clearLimitStates();
+        }
+    }, 1000);
+<?php endif; ?>
+
 // Update pagination info for raw materials
 function updateRawPaginationInfo(totalCount, limit) {
     console.log('Raw materials pagination updated:', { totalCount, limit });
@@ -906,6 +967,30 @@ function updateTotalCount(elementId, count) {
         element.textContent = count;
     }
 }
+
+// Function to hide pagination if not needed (AJAX version)
+function hidePaginationIfNotNeeded(tabType, limit) {
+    let totalCount;
+    let paginationElement;
+
+    if (tabType === "raw") {
+        totalCount = parseInt(document.getElementById("total-raw-count").textContent);
+        paginationElement = document.querySelector("#content-bahan .flex.items-center.justify-between.border-t");
+    } else if (tabType === "kemasan") {
+        totalCount = parseInt(document.getElementById("total-kemasan-count").textContent);
+        paginationElement = document.querySelector("#content-kemasan .flex.items-center.justify-between.border-t");
+    } else {
+        console.error("Invalid tab type:", tabType);
+        return;
+    }
+
+    if (totalCount <= limit && paginationElement) {
+        paginationElement.style.display = "none";
+    } else if (paginationElement) {
+        paginationElement.style.display = "flex"; // Or whatever the default display is
+    }
+}
+
 </script>
 
 <?php include_once __DIR__ . '/../includes/footer.php'; ?>
