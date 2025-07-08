@@ -11,14 +11,17 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
 
 <aside class="flex flex-col w-64 bg-white shadow-lg border-r border-gray-200">
     <!-- Logo Aplikasi -->
-    <div class="flex items-center justify-start h-16 bg-white px-6 border-b border-gray-100">
+    <div class="flex items-center h-20 bg-white px-6 border-b border-gray-100">
         <div class="flex items-center space-x-3">
             <div class="w-8 h-8 bg-gray-800 rounded-md flex items-center justify-center">
                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
                 </svg>
             </div>
-            <span class="text-lg font-semibold text-gray-800">Manajemen HPP Sederhana</span>
+            <div>
+                <div class="text-lg font-semibold text-gray-800">Manajemen HPP</div>
+                <div class="text-lg font-semibold text-gray-800">Sederhana</div>
+            </div>
         </div>
     </div>
 
@@ -41,31 +44,39 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
                     Manajemen Produk
                 </a>
 
-                <a href="/cornerbites-sia/pages/bahan_baku.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'bahan_baku.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
-                    <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'bahan_baku.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="/cornerbites-sia/pages/bahan_baku.php" class="flex items-start py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'bahan_baku.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
+                    <svg class="w-5 h-5 mr-3 mt-0.5 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'bahan_baku.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                     </svg>
-                    Manajemen Bahan Baku & Kemasan
-                </a>
+                    <div class="flex flex-col leading-tight">
+                        <span>Manajemen Bahan Baku</span>
+                        <span>& Kemasan</span>
+                    </div>
+                </a></old_str>
 
-                <a href="/cornerbites-sia/pages/overhead_management.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'overhead_management.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
-                    <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'overhead_management.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="/cornerbites-sia/pages/overhead_management.php" class="flex items-start py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'overhead_management.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
+                    <svg class="w-5 h-5 mr-3 mt-0.5 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'overhead_management.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                     </svg>
-                    Overhead & Tenaga Kerja
+                    <div class="flex flex-col leading-tight">
+                        <span>Overhead & Tenaga</span>
+                        <span>Kerja</span>
+                    </div>
                 </a>
 
-                <a href="/cornerbites-sia/pages/resep_produk.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'resep_produk.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
-                    <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'resep_produk.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="/cornerbites-sia/pages/resep_produk.php" class="flex items-start py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'resep_produk.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
+                    <svg class="w-5 h-5 mr-3 mt-0.5 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'resep_produk.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                     </svg>
-                    Manajemen Resep & HPP
+                    <div class="flex flex-col leading-tight">
+                        <span>Manajemen Resep</span>
+                        <span>& HPP</span>
+                    </div>
                 </a>
 
 
-                
 
-                
+
             </div>
 
         <?php elseif ($user_role == 'admin'): ?>
@@ -85,19 +96,6 @@ $current_dir = basename(dirname($_SERVER['PHP_SELF']));
                     Kelola Pengguna
                 </a>
 
-                <a href="/cornerbites-sia/pages/bahan_baku.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'bahan_baku.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
-                    <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'bahan_baku.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                    </svg>
-                    Manajemen Bahan Baku
-                </a>
-
-                <a href="/cornerbites-sia/admin/statistik.php" class="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 group <?php echo ($current_page == 'statistik.php') ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600' : ''; ?>">
-                    <svg class="w-5 h-5 mr-3 text-gray-500 group-hover:text-gray-700 <?php echo ($current_page == 'statistik.php') ? 'text-blue-600' : ''; ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
-                    </svg>
-                    Statistik Global
-                </a>
             </div>
         <?php endif; ?>
     </nav>
