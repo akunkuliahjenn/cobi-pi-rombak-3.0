@@ -365,6 +365,34 @@ function performAjaxSearch(type, searchTerm, limit) {
         });
 }
 
+// Update pagination info for raw materials
+function updateRawPaginationInfo(totalCount, limit) {
+    // Hide pagination if all data fits in one page
+    const paginationContainer = document.querySelector('#content-bahan .border-t.border-gray-200.pt-6');
+    if (paginationContainer) {
+        if (totalCount <= limit) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+    console.log('Raw materials pagination updated:', { totalCount, limit });
+}
+
+// Update pagination info for kemasan
+function updateKemasanPaginationInfo(totalCount, limit) {
+    // Hide pagination if all data fits in one page
+    const paginationContainer = document.querySelector('#content-kemasan .border-t.border-gray-200.pt-6');
+    if (paginationContainer) {
+        if (totalCount <= limit) {
+            paginationContainer.style.display = 'none';
+        } else {
+            paginationContainer.style.display = 'flex';
+        }
+    }
+    console.log('Kemasan pagination updated:', { totalCount, limit });
+}
+
 // Function to update total count display
 function updateTotalCount(elementId, count) {
     const element = document.getElementById(elementId);

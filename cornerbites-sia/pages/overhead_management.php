@@ -383,8 +383,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'labor') {
                     </div>
                 <?php endif; ?>
 
-                    <!-- Forms Section -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Forms Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                         <!-- Form Biaya Overhead -->
                         <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
                             <div class="flex items-center mb-6">
@@ -511,169 +511,182 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'labor') {
                         </div>
                     </div>
 
-                <!-- Statistics Info -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Overhead Statistics -->
-                        <div class="bg-blue-50 rounded-lg p-4">
-                            <div class="flex items-center mb-3">
-                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                </svg>
-                                <span class="font-semibold text-blue-800">Data Biaya Overhead</span>
-                            </div>
-                            <div class="space-y-2">
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-blue-700">Total:</span>
-                                    <span class="font-medium text-blue-900"><?php echo number_format($total_overhead); ?> data</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-blue-700">Total Biaya:</span>
-                                    <span class="font-medium text-blue-900">
-                                        Rp <?php 
-                                        $total_overhead_amount_query = "SELECT SUM(amount) FROM overhead_costs WHERE is_active = 1";
-                                        $total_overhead_amount_stmt = $conn->prepare($total_overhead_amount_query);
-                                        $total_overhead_amount_stmt->execute();
-                                        $total_overhead_amount = $total_overhead_amount_stmt->fetchColumn() ?: 0;
-                                        echo number_format($total_overhead_amount, 0, ',', '.'); 
-                                        ?>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                
 
-                        <!-- Labor Statistics -->
-                        <div class="bg-green-50 rounded-lg p-4">
-                            <div class="flex items-center mb-3">
-                                <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
-                                </svg>
-                                <span class="font-semibold text-green-800">Data Tenaga Kerja</span>
-                            </div>
-                            <div class="space-y-2">
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-green-700">Total:</span>
-                                    <span class="font-medium text-green-900"><?php echo number_format($total_labor); ?> posisi</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-green-700">Rata-rata Upah/Jam:</span>
-                                    <span class="font-medium text-green-900">
-                                        Rp <?php 
-                                        $avg_labor_rate_query = "SELECT AVG(hourly_rate) FROM labor_costs WHERE is_active = 1";
-                                        $avg_labor_rate_stmt = $conn->prepare($avg_labor_rate_query);
-                                        $avg_labor_rate_stmt->execute();
-                                        $avg_labor_rate = $avg_labor_rate_stmt->fetchColumn() ?: 0;
-                                        echo number_format($avg_labor_rate, 0, ',', '.'); 
-                                        ?>
-                                    </span>
-                                </div>
-                            </div>
+                <!-- Daftar Overhead & Tenaga Kerja dengan Tab Navigation -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="p-2 bg-indigo-100 rounded-lg mr-3">
+                            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-800">Daftar Overhead & Tenaga Kerja</h2>
+                            <p class="text-sm text-gray-600">Kelola dan pantau semua biaya overhead dan tenaga kerja dalam inventori</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- Tabs Section -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-100">
                     <!-- Tab Navigation -->
-                    <div class="border-b border-gray-200">
-                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                            <button id="tab-overhead" onclick="showTab('overhead')" 
-                                    class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm border-blue-500 text-blue-600">
-                                <div class="flex items-center">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg" role="tablist">
+                        <button id="tab-overhead" 
+                                class="flex-1 px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 bg-white text-blue-600 shadow-sm" 
+                                role="tab" 
+                                aria-selected="true"
+                                onclick="showTab('overhead')">
+                            <div class="flex flex-col items-center space-y-1">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                     </svg>
-                                    Data Biaya Overhead
+                                    <span>Biaya Overhead</span>
+                                    <span id="badge-overhead" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><?php echo $total_overhead; ?></span>
                                 </div>
-                            </button>
-                            <button id="tab-labor" onclick="showTab('labor')" 
-                                    class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
-                                <div class="flex items-center">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="text-xs text-blue-600">
+                                    <?php 
+                                    $total_overhead_amount_query = "SELECT SUM(amount) FROM overhead_costs WHERE is_active = 1";
+                                    $total_overhead_amount_stmt = $conn->prepare($total_overhead_amount_query);
+                                    $total_overhead_amount_stmt->execute();
+                                    $total_overhead_amount = $total_overhead_amount_stmt->fetchColumn() ?: 0;
+                                    ?>
+                                    Total Biaya: Rp <?php echo number_format($total_overhead_amount, 0, ',', '.'); ?>
+                                </div>
+                            </div>
+                        </button>
+                        <button id="tab-labor" 
+                                class="flex-1 px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-gray-500 hover:text-gray-700" 
+                                role="tab" 
+                                aria-selected="false"
+                                onclick="showTab('labor')">
+                            <div class="flex flex-col items-center space-y-1">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
                                     </svg>
-                                    Data Tenaga Kerja
+                                    <span>Tenaga Kerja</span>
+                                    <span id="badge-labor" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600"><?php echo $total_labor; ?></span>
                                 </div>
-                            </button>
-                        </nav>
+                                <div class="text-xs text-gray-500">
+                                    <?php 
+                                    $avg_labor_rate_query = "SELECT AVG(hourly_rate) FROM labor_costs WHERE is_active = 1";
+                                    $avg_labor_rate_stmt = $conn->prepare($avg_labor_rate_query);
+                                    $avg_labor_rate_stmt->execute();
+                                    $avg_labor_rate = $avg_labor_rate_stmt->fetchColumn() ?: 0;
+                                    ?>
+                                    Rata-rata Upah/Jam: Rp <?php echo number_format($avg_labor_rate, 0, ',', '.'); ?>
+                                </div>
+                            </div>
+                        </button>
                     </div>
+                    <!-- Tab Content: Biaya Overhead -->
+                    <div id="content-overhead" class="tab-content" role="tabpanel">
+                        <!-- Filter & Pencarian Biaya Overhead -->
+                        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                            <div class="flex items-center mb-4">
+                                <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"></path>
+                                </svg>
+                                <h3 class="text-lg font-semibold text-gray-800">Filter & Pencarian Biaya Overhead</h3>
+                            </div>
 
-                    <!-- Tab Content -->
-                    <div class="p-6">
-                        <!-- Overhead Tab -->
-                        <div id="content-overhead" class="tab-content">
-                            <!-- Search and Filter untuk Overhead -->
-                            <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                                <div class="flex-1 max-w-md">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="search-overhead-input" class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                             </svg>
                                         </div>
                                         <input type="text" id="search-overhead-input" 
-                                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
-                                               placeholder="Cari biaya overhead..." 
+                                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                                               placeholder="Cari nama biaya..."
                                                value="<?php echo htmlspecialchars($search_overhead); ?>">
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-4">
-                                    <div class="flex items-center">
-                                        <label for="limit-overhead-select" class="text-sm font-medium text-gray-700 mr-2">Tampilkan:</label>
-                                        <select id="limit-overhead-select" 
-                                                class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                            <?php foreach ([5, 10, 15, 20] as $option): ?>
-                                                <option value="<?php echo $option; ?>" <?php echo $limit_overhead == $option ? 'selected' : ''; ?>>
-                                                    <?php echo $option; ?> Data
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Tabel Overhead -->
-                            <div id="overhead-container">
-                                <!-- Content akan dimuat via AJAX -->
+                                <div>
+                                    <label for="limit-overhead-select" class="block text-sm font-medium text-gray-700 mb-2">Data per Halaman</label>
+                                    <select id="limit-overhead-select" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <?php foreach ([5, 10, 15, 20] as $option): ?>
+                                            <option value="<?php echo $option; ?>" <?php echo $limit_overhead == $option ? 'selected' : ''; ?>>
+                                                <?php echo $option; ?> Data
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Labor Tab -->
-                        <div id="content-labor" class="tab-content hidden">
-                            <!-- Search and Filter untuk Labor -->
-                            <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                                <div class="flex-1 max-w-md">
+                        <!-- Info Total Overhead -->
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center">
+                                <p class="text-sm text-gray-600">
+                                    Total: <span id="total-overhead-count" class="font-semibold"><?php echo $total_overhead; ?></span> biaya overhead
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Overhead -->
+                        <div id="overhead-container">
+                            <!-- Content akan dimuat via AJAX -->
+                        </div>
+                    </div>
+
+                    <!-- Tab Content: Tenaga Kerja -->
+                    <div id="content-labor" class="tab-content hidden" role="tabpanel">
+                        <!-- Filter & Pencarian Tenaga Kerja -->
+                        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                            <div class="flex items-center mb-4">
+                                <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"></path>
+                                </svg>
+                                <h3 class="text-lg font-semibold text-gray-800">Filter & Pencarian Tenaga Kerja</h3>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="search-labor-input" class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                             </svg>
                                         </div>
                                         <input type="text" id="search-labor-input" 
-                                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500" 
-                                               placeholder="Cari posisi tenaga kerja..." 
+                                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                                               placeholder="Cari posisi/jabatan..."
                                                value="<?php echo htmlspecialchars($search_labor); ?>">
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-4">
-                                    <div class="flex items-center">
-                                        <label for="limit-labor-select" class="text-sm font-medium text-gray-700 mr-2">Tampilkan:</label>
-                                        <select id="limit-labor-select" 
-                                                class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                                            <?php foreach ([5, 10, 15, 20] as $option): ?>
-                                                <option value="<?php echo $option; ?>" <?php echo $limit_labor == $option ? 'selected' : ''; ?>>
-                                                    <?php echo $option; ?> Data
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
+
+                                <div>
+                                    <label for="limit-labor-select" class="block text-sm font-medium text-gray-700 mb-2">Data per Halaman</label>
+                                    <select id="limit-labor-select" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                        <?php foreach ([5, 10, 15, 20] as $option): ?>
+                                            <option value="<?php echo $option; ?>" <?php echo $limit_labor == $option ? 'selected' : ''; ?>>
+                                                <?php echo $option; ?> Data
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Tabel Labor -->
-                            <div id="labor-container">
-                                <!-- Content akan dimuat via AJAX -->
+                        <!-- Info Total Tenaga Kerja -->
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center">
+                                <p class="text-sm text-gray-600">
+                                    Total: <span id="total-labor-count" class="font-semibold"><?php echo $total_labor; ?></span> posisi tenaga kerja
+                                </p>
                             </div>
+                        </div>
+
+                        <!-- Tabel Labor -->
+                        <div id="labor-container">
+                            <!-- Content akan dimuat via AJAX -->
                         </div>
                     </div>
                 </div>
@@ -684,6 +697,75 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'labor') {
 
 <script src="/cornerbites-sia/assets/js/overhead.js"></script>
 <script>
+function showTab(tabName) {
+    const tabOverhead = document.getElementById('tab-overhead');
+    const tabLabor = document.getElementById('tab-labor');
+    const contentOverhead = document.getElementById('content-overhead');
+    const contentLabor = document.getElementById('content-labor');
+
+    if (tabName === 'overhead') {
+        tabOverhead.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+        tabOverhead.classList.remove('text-gray-500', 'hover:text-gray-700');
+        tabOverhead.setAttribute('aria-selected', 'true');
+        
+        // Update text colors in overhead tab
+        const overheadTextElements = tabOverhead.querySelectorAll('.text-gray-500');
+        overheadTextElements.forEach(el => {
+            el.classList.remove('text-gray-500');
+            el.classList.add('text-blue-600');
+        });
+
+        tabLabor.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+        tabLabor.classList.add('text-gray-500', 'hover:text-gray-700');
+        tabLabor.setAttribute('aria-selected', 'false');
+        
+        // Update text colors in labor tab
+        const laborTextElements = tabLabor.querySelectorAll('.text-blue-600');
+        laborTextElements.forEach(el => {
+            el.classList.remove('text-blue-600');
+            el.classList.add('text-gray-500');
+        });
+
+        contentOverhead.classList.remove('hidden');
+        contentLabor.classList.add('hidden');
+    } else if (tabName === 'labor') {
+        tabLabor.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+        tabLabor.classList.remove('text-gray-500', 'hover:text-gray-700');
+        tabLabor.setAttribute('aria-selected', 'true');
+        
+        // Update text colors in labor tab
+        const laborTextElements = tabLabor.querySelectorAll('.text-gray-500');
+        laborTextElements.forEach(el => {
+            el.classList.remove('text-gray-500');
+            el.classList.add('text-blue-600');
+        });
+
+        tabOverhead.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+        tabOverhead.classList.add('text-gray-500', 'hover:text-gray-700');
+        tabOverhead.setAttribute('aria-selected', 'false');
+        
+        // Update text colors in overhead tab
+        const overheadTextElements = tabOverhead.querySelectorAll('.text-blue-600');
+        overheadTextElements.forEach(el => {
+            el.classList.remove('text-blue-600');
+            el.classList.add('text-gray-500');
+        });
+
+        contentLabor.classList.remove('hidden');
+        contentOverhead.classList.add('hidden');
+    }
+
+    // Trigger AJAX refresh for the active tab
+    if (tabName === 'overhead') {
+        const searchOverhead = document.getElementById('search-overhead-input').value;
+        const overheadLimit = document.getElementById('limit-overhead-select').value;
+        loadOverheadData(1);
+    } else if (tabName === 'labor') {
+        const searchLabor = document.getElementById('search-labor-input').value;
+        const laborLimit = document.getElementById('limit-labor-select').value;
+        loadLaborData(1);
+    }
+}
     // Initialize data loading when page loads
     document.addEventListener('DOMContentLoaded', function() {
         // Load initial data
