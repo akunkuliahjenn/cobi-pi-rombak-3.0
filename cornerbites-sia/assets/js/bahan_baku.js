@@ -1,3 +1,4 @@
+
 // bahan_baku.js
 // JavaScript functions for bahan baku management with AJAX search
 
@@ -8,6 +9,17 @@ const defaultLimit = 5;
 
 // Variables untuk menyimpan posisi scroll
 let currentScrollPosition = 0;
+
+// Function to scroll to form
+function scrollToForm() {
+    const formElement = document.querySelector('form[action="../process/simpan_bahan_baku.php"]');
+    if (formElement) {
+        formElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }
+}
 
 // Currency formatting for price input
 document.addEventListener('DOMContentLoaded', function() {
