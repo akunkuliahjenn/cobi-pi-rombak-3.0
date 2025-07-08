@@ -55,13 +55,10 @@ function formatNumber(num) {
 
 // Format input dengan pemisah ribuan otomatis
 function formatRupiahInput(element) {
-    // Simpan posisi cursor
-    let cursorPosition = element.selectionStart;
-    let oldValue = element.value;
-    
     // Hapus semua karakter non-digit
     let value = element.value.replace(/[^0-9]/g, '');
 
+    // Jika kosong, biarkan kosong
     if (value === '') {
         element.value = '';
         return;
@@ -70,17 +67,6 @@ function formatRupiahInput(element) {
     // Format dengan titik sebagai pemisah ribuan
     let formatted = formatNumber(parseInt(value));
     element.value = formatted;
-    
-    // Restore cursor position dengan adjustment untuk pemisah yang ditambahkan
-    let newCursorPosition = cursorPosition;
-    if (formatted.length > oldValue.length) {
-        newCursorPosition = cursorPosition + (formatted.length - oldValue.length);
-    }
-    
-    // Set cursor position
-    setTimeout(() => {
-        element.setSelectionRange(newCursorPosition, newCursorPosition);
-    }, 0);
 }
 
 // Edit overhead
@@ -346,22 +332,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Format overhead amount input
     const overheadAmountInput = document.getElementById('overhead_amount');
     if (overheadAmountInput) {
+        // Format input saat user mengetik
         overheadAmountInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^\d]/g, '');
-            if (value) {
-                e.target.value = numberFormat(value);
-            }
+            formatRupiahInput(e.target);
         });
     }
 
     // Format labor hourly rate input
     const laborRateInput = document.getElementById('labor_hourly_rate');
     if (laborRateInput) {
+        // Format input saat user mengetik
         laborRateInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^\d]/g, '');
-            if (value) {
-                e.target.value = numberFormat(value);
-            }
+            formatRupiahInput(e.target);
         });
     }
 
@@ -546,19 +528,6 @@ document.addEventListener('DOMContentLoaded', function() {
             formatRupiahInput(e.target);
         });
 
-        // Format juga saat blur dan keyup untuk memastikan format selalu terapply
-        amountInput.addEventListener('blur', function(e) {
-            if (e.target.value && !isNaN(e.target.value.replace(/[^\d]/g, ''))) {
-                formatRupiahInput(e.target);
-            }
-        });
-
-        amountInput.addEventListener('keyup', function(e) {
-            if (e.target.value && !isNaN(e.target.value.replace(/[^\d]/g, ''))) {
-                formatRupiahInput(e.target);
-            }
-        });
-
         // Convert ke number saat submit
         const overheadForm = amountInput.closest('form');
         if (overheadForm) {
@@ -586,19 +555,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Format input saat user mengetik
         hourlyRateInput.addEventListener('input', function(e) {
             formatRupiahInput(e.target);
-        });
-
-        // Format juga saat blur dan keyup untuk memastikan format selalu terapply
-        hourlyRateInput.addEventListener('blur', function(e) {
-            if (e.target.value && !isNaN(e.target.value.replace(/[^\d]/g, ''))) {
-                formatRupiahInput(e.target);
-            }
-        });
-
-        hourlyRateInput.addEventListener('keyup', function(e) {
-            if (e.target.value && !isNaN(e.target.value.replace(/[^\d]/g, ''))) {
-                formatRupiahInput(e.target);
-            }
         });
 
         // Convert ke number saat submit

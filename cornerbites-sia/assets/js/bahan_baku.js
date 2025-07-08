@@ -3,8 +3,8 @@
 
 const unitOptions = ['kg', 'gram', 'liter', 'ml', 'pcs', 'buah', 'roll', 'meter', 'box', 'botol', 'lembar'];
 const typeOptions = ['bahan', 'kemasan'];
-const validLimits = [6, 12, 18, 24, 30];
-const defaultLimit = 6;
+const validLimits = [5, 10, 15, 20, 25];
+const defaultLimit = 5;
 
 // Variables untuk menyimpan posisi scroll
 let currentScrollPosition = 0;
