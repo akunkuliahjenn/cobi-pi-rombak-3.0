@@ -20,15 +20,9 @@ try {
         $unit_select = trim($_POST['unit'] ?? '');
         $unit_custom = trim($_POST['unit_custom'] ?? '');
         $unit = ($unit_select === 'custom') ? $unit_custom : $unit_select;
-        $stock = (int) ($_POST['stock'] ?? 0);
 
-        // Handle sale_price - remove any formatting
-        $sale_price_raw = $_POST['sale_price'] ?? 0;
-        if (is_string($sale_price_raw)) {
-            // Remove any currency formatting
-            $sale_price_raw = preg_replace('/[^0-9.]/', '', $sale_price_raw);
-        }
-        $sale_price = (float) $sale_price_raw;
+        // Default sale_price to 0 - will be set via HPP management
+        $sale_price = 0;
 
         // Validasi dasar
         if (empty($name)) {
@@ -43,31 +37,21 @@ try {
             exit();
         }
 
-        if ($stock < 0) {
-            $_SESSION['product_message'] = ['text' => 'Stok tidak boleh negatif.', 'type' => 'error'];
-            header("Location: /cornerbites-sia/pages/produk.php");
-            exit();
-        }
-
-        if ($sale_price < 0) {
-            $_SESSION['product_message'] = ['text' => 'Harga jual tidak boleh negatif.', 'type' => 'error'];
-            header("Location: /cornerbites-sia/pages/produk.php");
-            exit();
-        }
+        
 
         if ($product_id) {
-            // --- Update Produk ---
-            $stmt = $conn->prepare("UPDATE products SET name = ?, unit = ?, stock = ?, sale_price = ? WHERE id = ?");
-            if ($stmt->execute([$name, $unit, $stock, $sale_price, $product_id])) {
-                $_SESSION['product_message'] = ['text' => 'Produk berhasil diperbarui!', 'type' => 'success'];
+            // --- Update Produk --- (hanya update name dan unit, harga jual diatur di HPP)
+            $stmt = $conn->prepare("UPDATE products SET name = ?, unit = ? WHERE id = ?");
+            if ($stmt->execute([$name, $unit, $product_id])) {
+                $_SESSION['product_message'] = ['text' => 'Produk berhasil diperbarui! Harga jual dapat diatur di halaman Manajemen Resep & HPP.', 'type' => 'success'];
             } else {
                 $_SESSION['product_message'] = ['text' => 'Gagal memperbarui produk.', 'type' => 'error'];
             }
         } else {
             // --- Tambah Produk Baru ---
-            $stmt = $conn->prepare("INSERT INTO products (name, unit, stock, sale_price) VALUES (?, ?, ?, ?)");
-            if ($stmt->execute([$name, $unit, $stock, $sale_price])) {
-                $_SESSION['product_message'] = ['text' => 'Produk baru berhasil ditambahkan!', 'type' => 'success'];
+            $stmt = $conn->prepare("INSERT INTO products (name, unit, sale_price) VALUES (?, ?, ?)");
+            if ($stmt->execute([$name, $unit, $sale_price])) {
+                $_SESSION['product_message'] = ['text' => 'Produk baru berhasil ditambahkan! Selanjutnya buat resep dan atur harga jual di halaman Manajemen Resep & HPP.', 'type' => 'success'];
             } else {
                 $_SESSION['product_message'] = ['text' => 'Gagal menambahkan produk baru.', 'type' => 'error'];
             }

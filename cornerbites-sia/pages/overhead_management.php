@@ -139,41 +139,41 @@ function buildUrl($params = []) {
 if (isset($_GET['ajax']) && $_GET['ajax'] == 'overhead') {
     ?>
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Biaya</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah (Rp)</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+        <table class="min-w-full">
+            <thead>
+                <tr class="border-b border-gray-200">
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">NAMA BIAYA</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">DESKRIPSI</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">JUMLAH (RP)</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">AKSI</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-white">
                 <?php if (!empty($overhead_costs)): ?>
                     <?php foreach ($overhead_costs as $overhead): ?>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="px-4 py-3">
                                 <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($overhead['name']); ?></div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-500"><?php echo htmlspecialchars($overhead['description'] ?? '-'); ?></div>
+                            <td class="px-4 py-3">
+                                <div class="text-sm text-gray-600"><?php echo htmlspecialchars($overhead['description'] ?? '-'); ?></div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-green-600">
+                            <td class="px-4 py-3">
+                                <div class="text-sm font-medium text-green-600">
                                     Rp <?php echo number_format($overhead['amount'], 0, ',', '.'); ?>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center space-x-2">
+                            <td class="px-4 py-3">
+                                <div class="flex items-center space-x-1">
                                     <button onclick="editOverhead(<?php echo htmlspecialchars(json_encode($overhead)); ?>); scrollToForm()"
-                                            class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition duration-200">
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200">
                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                         Edit
                                     </button>
                                     <button onclick="deleteOverhead(<?php echo $overhead['id']; ?>, '<?php echo htmlspecialchars($overhead['name']); ?>')" 
-                                            class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 transition duration-200">
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded text-red-600 bg-red-50 hover:bg-red-100 border border-red-200">
                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
@@ -185,13 +185,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'overhead') {
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="4" class="px-6 py-12 text-center">
+                        <td colspan="4" class="px-4 py-8 text-center">
                             <div class="flex flex-col items-center">
-                                <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
-                                <p class="text-gray-500 text-lg font-medium">Belum ada biaya overhead</p>
-                                <p class="text-gray-400 text-sm mt-1">Tambahkan biaya overhead pertama Anda</p>
+                                <p class="text-gray-500 font-medium">Belum ada biaya overhead</p>
+                                <p class="text-gray-400 text-sm">Tambahkan biaya overhead pertama Anda</p>
                             </div>
                         </td>
                     </tr>
@@ -200,42 +200,41 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'overhead') {
         </table>
     </div>
 
+    <!-- Info pagination di bawah -->
+    <div class="mt-4 text-sm text-gray-600">
+        Menampilkan <?php echo (($page_overhead - 1) * $limit_overhead) + 1; ?> sampai <?php echo min($page_overhead * $limit_overhead, $total_overhead); ?> dari <?php echo $total_overhead; ?> hasil
+    </div>
+
     <!-- Pagination for Overhead -->
     <?php if ($total_pages_overhead > 1): ?>
-    <div class="bg-white px-6 py-4 border-t border-gray-200">
-        <div class="flex items-center justify-between">
-            <div class="text-sm text-gray-700">
-                Menampilkan <?php echo number_format($offset_overhead + 1); ?> sampai 
-                <?php echo number_format(min($offset_overhead + $limit_overhead, $total_overhead)); ?> dari 
-                <?php echo number_format($total_overhead); ?> data
-            </div>
-            <div class="flex items-center space-x-2">
-               <?php if ($page_overhead > 1): ?>
-                    <a href="javascript:void(0)" onclick="loadOverheadData(<?php echo $page_overhead - 1; ?>)"
-                       class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                        Prev
-                    </a>
-                <?php endif; ?>
+    <div class="flex items-center justify-end mt-4 space-x-2">
+        <?php if ($page_overhead > 1): ?>
+            <a href="javascript:void(0)" onclick="loadOverheadData(<?php echo $page_overhead - 1; ?>)"
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                <?php echo $page_overhead - 1; ?>
+            </a>
+        <?php endif; ?>
 
-                <?php
-                $start_page = max(1, $page_overhead - 2);
-                $end_page = min($total_pages_overhead, $page_overhead + 2);
-                for ($i = $start_page; $i <= $end_page; $i++):
-                    ?>
-                    <a href="javascript:void(0)" onclick="loadOverheadData(<?php echo $i; ?>)"
-                       class="px-3 py-2 text-sm <?php echo $i == $page_overhead ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?> rounded-lg transition-colors">
-                        <?php echo $i; ?>
-                    </a>
-                <?php endfor; ?>
+        <a href="javascript:void(0)" onclick="loadOverheadData(<?php echo $page_overhead; ?>)"
+           class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md">
+            <?php echo $page_overhead; ?>
+        </a>
 
-                <?php if ($page_overhead < $total_pages_overhead): ?>
-                    <a href="javascript:void(0)" onclick="loadOverheadData(<?php echo $page_overhead + 1; ?>)"
-                       class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                        Next
-                    </a>
-                <?php endif; ?>
-            </div>
-        </div>
+        <?php if ($page_overhead < $total_pages_overhead): ?>
+            <a href="javascript:void(0)" onclick="loadOverheadData(<?php echo $page_overhead + 1; ?>)"
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                <?php echo $page_overhead + 1; ?>
+            </a>
+        <?php endif; ?>
+
+        <?php if ($page_overhead < $total_pages_overhead): ?>
+            <a href="javascript:void(0)" onclick="loadOverheadData(<?php echo $page_overhead + 1; ?>)"
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                </svg>
+            </a>
+        <?php endif; ?>
     </div>
     <?php endif; ?>
     <?php
@@ -305,42 +304,41 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'labor') {
         </table>
     </div>
 
+    <!-- Info pagination di bawah -->
+    <div class="mt-4 text-sm text-gray-600">
+        Menampilkan <?php echo (($page_labor - 1) * $limit_labor) + 1; ?> sampai <?php echo min($page_labor * $limit_labor, $total_labor); ?> dari <?php echo $total_labor; ?> hasil
+    </div>
+
     <!-- Pagination for Labor -->
     <?php if ($total_pages_labor > 1): ?>
-    <div class="bg-white px-6 py-4 border-t border-gray-200">
-        <div class="flex items-center justify-between">
-            <div class="text-sm text-gray-700">
-                Menampilkan <?php echo number_format($offset_labor + 1); ?> sampai 
-                <?php echo number_format(min($offset_labor + $limit_labor, $total_labor)); ?> dari 
-                <?php echo number_format($total_labor); ?> data
-            </div>
-            <div class="flex items-center space-x-2">
-                <?php if ($page_labor > 1): ?>
-                    <a href="javascript:void(0)" onclick="loadLaborData(<?php echo $page_labor - 1; ?>)"
-                       class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                        Prev
-                    </a>
-                <?php endif; ?>
+    <div class="flex items-center justify-end mt-4 space-x-2">
+        <?php if ($page_labor > 1): ?>
+            <a href="javascript:void(0)" onclick="loadLaborData(<?php echo $page_labor - 1; ?>)"
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                <?php echo $page_labor - 1; ?>
+            </a>
+        <?php endif; ?>
 
-                <?php
-                $start_page = max(1, $page_labor - 2);
-                $end_page = min($total_pages_labor, $page_labor + 2);
-                for ($i = $start_page; $i <= $end_page; $i++):
-                    ?>
-                    <a href="javascript:void(0)" onclick="loadLaborData(<?php echo $i; ?>)"
-                       class="px-3 py-2 text-sm <?php echo $i == $page_labor ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?> rounded-lg transition-colors">
-                        <?php echo $i; ?>
-                    </a>
-                <?php endfor; ?>
+        <a href="javascript:void(0)" onclick="loadLaborData(<?php echo $page_labor; ?>)"
+           class="px-3 py-2 text-sm bg-blue-600 text-white rounded-md">
+            <?php echo $page_labor; ?>
+        </a>
 
-                <?php if ($page_labor < $total_pages_labor): ?>
-                    <a href="javascript:void(0)" onclick="loadLaborData(<?php echo $page_labor + 1; ?>)"
-                       class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                        Next
-                    </a>
-                <?php endif; ?>
-            </div>
-        </div>
+        <?php if ($page_labor < $total_pages_labor): ?>
+            <a href="javascript:void(0)" onclick="loadLaborData(<?php echo $page_labor + 1; ?>)"
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                <?php echo $page_labor + 1; ?>
+            </a>
+        <?php endif; ?>
+
+        <?php if ($page_labor < $total_pages_labor): ?>
+            <a href="javascript:void(0)" onclick="loadLaborData(<?php echo $page_labor + 1; ?>)"
+               class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                </svg>
+            </a>
+        <?php endif; ?>
     </div>
     <?php endif; ?>
     <?php
@@ -584,7 +582,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] == 'labor') {
                         <div class="bg-gray-50 rounded-lg p-4 mb-6">
                             <div class="flex items-center mb-4">
                                 <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
                                 </svg>
                                 <h3 class="text-lg font-semibold text-gray-800">Filter & Pencarian Biaya Overhead</h3>
                             </div>

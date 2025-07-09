@@ -269,11 +269,11 @@ if (isset($_SESSION['product_message'])) {
                             <option value="pcs">pcs (pieces)</option>
                             <option value="porsi">porsi</option>
                             <option value="bungkus">bungkus</option>
-                            <option value="cup">cup</option>
+                            <option value="cup">cup</cup>
                             <option value="botol">botol</option>
-                            <option value="gelas">gelas</option>
-                            <option value="slice">slice</option>
-                            <option value="pack">pack</option>
+                            <option value="gelas">gelas</gelas>
+                            <option value="slice">slice</slice>
+                            <option value="pack">pack</pack>
                             <option value="box">box</box>
                             <option value="kg">kg (kilogram)</option>
                             <option value="gram">gram</gram>
@@ -284,13 +284,20 @@ if (isset($_SESSION['product_message'])) {
                         <input type="text" id="unit_custom" name="unit_custom" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 mt-2 hidden" placeholder="Ketik satuan custom...">
                     </div>
                     <div class="md:col-span-2">
-                        <label for="sale_price" class="block text-sm font-semibold text-gray-700 mb-2">Harga Jual (Rp):</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <span class="text-gray-500 text-sm font-medium">Rp</span>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <h4 class="text-sm font-medium text-blue-800">Harga Jual Diatur di Manajemen Resep & HPP</h4>
+                                    <p class="text-sm text-blue-700 mt-1">
+                                        Harga jual akan diatur setelah Anda membuat resep di halaman 
+                                        <a href="resep_produk.php" class="font-semibold underline hover:text-blue-900">Manajemen Resep & HPP</a> 
+                                        berdasarkan kalkulasi HPP yang akurat.
+                                    </p>
+                                </div>
                             </div>
-                            <input type="text" id="sale_price_display" class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" placeholder="Masukkan harga jual" oninput="formatRupiah(this, 'sale_price')">
-                            <input type="hidden" id="sale_price" name="sale_price" required>
                         </div>
                     </div>
                 </div>
@@ -410,10 +417,12 @@ if (isset($_SESSION['product_message'])) {
                             <?php else: ?>
                                 <tr>
                                     <td colspan="4" class="px-6 py-12 text-center">
-                                        <div class="flex flex-col items-center"><svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div class="flex flex-col items-center">
+                                            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                             </svg>
                                             <p class="text-gray-500 text-lg font-medium">Belum ada produk yang tercatat</p>
+                                            <p class="text-gray-400 text-sm mt-1">Mulai tambahkan produk pertama Anda menggunakan form di atas</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -434,7 +443,7 @@ if (isset($_SESSION['product_message'])) {
                             <?php if ($page < $totalPages): ?>
                                 <a href="?search=<?php echo urlencode($search); ?>&limit=<?php echo $limit; ?>&page=<?php echo $page + 1; ?>" 
                                    class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Next</a>
-                <?php endif; ?>
+                            <?php endif; ?>
                         </div>
                         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                             <div class="flex items-center space-x-2">
@@ -484,7 +493,7 @@ if (isset($_SESSION['product_message'])) {
                                             <span class="sr-only">Next</span>
                                             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                                            </svg>
+                                        </svg>
                                         </a>
                                     <?php endif; ?>
                                 </nav>
@@ -495,65 +504,140 @@ if (isset($_SESSION['product_message'])) {
                 <?php endif; ?>
             </div>
         </div>
-    </div>            
+    </div>
 </main>
+
     </div>
 </div>
 
-<script src="/cornerbites-sia/assets/js/produk.js"></script>
-
-<!-- Script untuk AJAX search tanpa reload halaman -->
 <script>
+// Toggle custom unit input
+function toggleCustomUnit() {
+    const unitSelect = document.getElementById('unit');
+    const customUnitInput = document.getElementById('unit_custom');
+
+    if (unitSelect.value === 'custom') {
+        customUnitInput.classList.remove('hidden');
+        customUnitInput.required = true;
+    } else {
+        customUnitInput.classList.add('hidden');
+        customUnitInput.required = false;
+        customUnitInput.value = '';
+    }
+}
+
+// Real-time search functionality
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const searchValue = this.value;
+        const limitValue = document.getElementById('limit-select').value;
+        loadProducts(searchValue, limitValue, 1);
+    }, 500);
+});
+
+document.getElementById('limit-select').addEventListener('change', function() {
+    const searchValue = document.getElementById('search-input').value;
+    const limitValue = this.value;
+    loadProducts(searchValue, limitValue, 1);
+});
+
+function loadProducts(search = '', limit = 10, page = 1) {
+    const url = `?ajax=1&search=${encodeURIComponent(search)}&limit=${limit}&page=${page}`;
+
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('products-container').innerHTML = html;
+
+            // Update URL without refreshing page
+            const newUrl = `?search=${encodeURIComponent(search)}&limit=${limit}&page=${page}`;
+            window.history.replaceState(null, '', newUrl);
+        })
+        .catch(error => {
+            console.error('Error loading products:', error);
+        });
+}
+
+// Edit product function
+function editProduct(product) {
+    document.getElementById('product_id_to_edit').value = product.id;
+    document.getElementById('product_name').value = product.name;
+
+    const unitSelect = document.getElementById('unit');
+    const customUnitInput = document.getElementById('unit_custom');
+
+    // Check if unit exists in options
+    let unitFound = false;
+    for (let option of unitSelect.options) {
+        if (option.value === product.unit) {
+            unitSelect.value = product.unit;
+            unitFound = true;
+            break;
+        }
+    }
+
+    // If unit not found in options, use custom
+    if (!unitFound) {
+        unitSelect.value = 'custom';
+        customUnitInput.classList.remove('hidden');
+        customUnitInput.required = true;
+        customUnitInput.value = product.unit;
+    } else {
+        customUnitInput.classList.add('hidden');
+        customUnitInput.required = false;
+        customUnitInput.value = '';
+    }
+
+    // Update form title and button
+    document.getElementById('form_title').textContent = 'Edit Produk: ' + product.name;
+    document.getElementById('form_description').textContent = 'Perbarui informasi produk yang sudah ada.';
+    document.getElementById('submit_button').innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+        </svg>
+        Update Produk
+    `;
+    document.getElementById('cancel_edit_button').classList.remove('hidden');
+
+    // Scroll to form
+    document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Reset form function
+function resetForm() {
+    document.getElementById('product_id_to_edit').value = '';
+    document.getElementById('product_name').value = '';
+    document.getElementById('unit').value = '';
+    document.getElementById('unit_custom').value = '';
+    document.getElementById('unit_custom').classList.add('hidden');
+    document.getElementById('unit_custom').required = false;
+
+    // Reset form title and button
+    document.getElementById('form_title').textContent = 'Tambah Produk Baru';
+    document.getElementById('form_description').textContent = 'Isi detail produk baru Anda atau gunakan form ini untuk mengedit produk yang sudah ada.';
+    document.getElementById('submit_button').innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Tambah Produk
+    `;
+    document.getElementById('cancel_edit_button').classList.add('hidden');
+}
+
+// Show price management alert when editing product
+function showPriceAlert() {
+    if (document.getElementById('product_id_to_edit').value) {
+        alert('Harga jual diatur di halaman Manajemen Resep & HPP berdasarkan kalkulasi HPP yang akurat.');
+    }
+}
+
+// Add event listener to sale price field if it exists (for future compatibility)
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('search-input');
-    const limitSelect = document.getElementById('limit-select');
-
-    let searchTimeout;
-
-    // Function untuk melakukan AJAX request
-    function performSearch() {
-        const searchValue = searchInput.value;
-        const limitValue = limitSelect.value;
-
-        // Buat URL untuk AJAX request
-        const params = new URLSearchParams({
-            search: searchValue,
-            limit: limitValue,
-            ajax: '1' // Flag untuk menandakan ini AJAX request
-        });
-
-        // Tampilkan loading indicator
-        const container = document.getElementById('products-container');
-        container.innerHTML = '<div class="flex justify-center items-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><span class="ml-2 text-gray-600">Mencari...</span></div>';
-
-        // Lakukan AJAX request
-        fetch(`/cornerbites-sia/pages/produk.php?${params.toString()}`)
-            .then(response => response.text())
-            .then(html => {
-                // Update container dengan hasil pencarian
-                container.innerHTML = html;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                container.innerHTML = '<div class="text-center py-12 text-red-600">Terjadi kesalahan saat mencari data.</div>';
-            });
-    }
-
-    // Real-time search dengan debouncing
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                performSearch();
-            }, 500);
-        });
-    }
-
-    // Limit select change
-    if (limitSelect) {
-        limitSelect.addEventListener('change', function() {
-            performSearch();
-        });
+    const salePriceField = document.getElementById('sale_price');
+    if (salePriceField) {
+        salePriceField.addEventListener('focus', showPriceAlert);
     }
 });
 </script>

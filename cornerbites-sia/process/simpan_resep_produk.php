@@ -2,6 +2,77 @@
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/db.php';
 
+// Function untuk menghitung HPP berdasarkan resep
+function calculateHPPForProduct($conn, $product_id, $production_yield = 1, $production_time_hours = 1) {
+    $totalCostPerBatch = 0;
+
+    try {
+        // 1. BIAYA BAHAN BAKU - Ambil semua item resep
+        $stmtRecipes = $conn->prepare("
+            SELECT pr.quantity_used, pr.unit_measurement,
+                   COALESCE(rm.purchase_price_per_unit, 0) as purchase_price_per_unit, 
+                   COALESCE(rm.default_package_quantity, 1) as default_package_quantity
+            FROM product_recipes pr
+            JOIN raw_materials rm ON pr.raw_material_id = rm.id
+            WHERE pr.product_id = ?
+        ");
+        $stmtRecipes->execute([$product_id]);
+        $allRecipeItems = $stmtRecipes->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($allRecipeItems as $item) {
+            if ($item['default_package_quantity'] && $item['default_package_quantity'] > 0) {
+                $costPerUnit = $item['purchase_price_per_unit'] / $item['default_package_quantity'];
+                $costPerItem = $costPerUnit * $item['quantity_used'];
+            } else {
+                $costPerItem = $item['purchase_price_per_unit'] * $item['quantity_used'];
+            }
+            $totalCostPerBatch += $costPerItem;
+        }
+
+        // 2. BIAYA TENAGA KERJA MANUAL
+        $stmtManualLabor = $conn->prepare("
+            SELECT plm.total_cost
+            FROM product_labor_manual plm
+            JOIN labor_costs lc ON plm.labor_id = lc.id
+            WHERE plm.product_id = ? AND lc.is_active = 1
+        ");
+        $stmtManualLabor->execute([$product_id]);
+        $manualLaborCosts = $stmtManualLabor->fetchAll(PDO::FETCH_ASSOC);
+
+        $laborCostPerBatch = 0;
+        foreach ($manualLaborCosts as $labor) {
+            $laborCostPerBatch += $labor['total_cost'];
+        }
+
+        // 3. BIAYA OVERHEAD MANUAL
+        $stmtManualOverhead = $conn->prepare("
+            SELECT pom.final_amount
+            FROM product_overhead_manual pom
+            JOIN overhead_costs oc ON pom.overhead_id = oc.id
+            WHERE pom.product_id = ? AND oc.is_active = 1
+        ");
+        $stmtManualOverhead->execute([$product_id]);
+        $manualOverheadCosts = $stmtManualOverhead->fetchAll(PDO::FETCH_ASSOC);
+
+        $overheadCostPerBatch = 0;
+        foreach ($manualOverheadCosts as $overhead) {
+            $overheadCostPerBatch += $overhead['final_amount'];
+        }
+
+        // 4. TOTAL HPP PER BATCH DAN PER UNIT
+        $totalCostPerBatch = $totalCostPerBatch + $laborCostPerBatch + $overheadCostPerBatch;
+
+        // Hitung HPP per unit berdasarkan production yield
+        $hppPerUnit = $production_yield > 0 ? $totalCostPerBatch / $production_yield : 0;
+
+        return $hppPerUnit;
+
+    } catch (Exception $e) {
+        error_log("Error calculating HPP: " . $e->getMessage());
+        return 0;
+    }
+}
+
 try {
     $conn = $db;
 
@@ -34,8 +105,19 @@ try {
                 $stmt = $conn->prepare("INSERT INTO product_recipes (product_id, raw_material_id, quantity_used, unit_measurement) VALUES (?, ?, ?, ?)");
                 $stmt->execute([$product_id, $raw_material_id, $quantity_used, $unit_measurement]);
 
+                // Auto-update HPP setelah menambah item
+                $productStmt = $conn->prepare("SELECT production_yield, production_time_hours FROM products WHERE id = ?");
+                $productStmt->execute([$product_id]);
+                $product = $productStmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($product) {
+                    $hppPerUnit = calculateHPPForProduct($conn, $product_id, $product['production_yield'], $product['production_time_hours']);
+                    $updateStmt = $conn->prepare("UPDATE products SET cost_price = ? WHERE id = ?");
+                    $updateStmt->execute([$hppPerUnit, $product_id]);
+                }
+
                 $_SESSION['resep_message'] = [
-                    'text' => 'Item berhasil ditambahkan ke resep',
+                    'text' => 'Item berhasil ditambahkan ke resep. HPP otomatis diupdate.',
                     'type' => 'success'
                 ];
                 break;
@@ -71,8 +153,19 @@ try {
                 $stmt = $conn->prepare("UPDATE product_recipes SET raw_material_id = ?, quantity_used = ?, unit_measurement = ? WHERE id = ? AND product_id = ?");
                 $stmt->execute([$raw_material_id, $quantity_used, $unit_measurement, $recipe_id, $product_id]);
 
+                // Auto-update HPP setelah edit item
+                $productStmt = $conn->prepare("SELECT production_yield, production_time_hours FROM products WHERE id = ?");
+                $productStmt->execute([$product_id]);
+                $product = $productStmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($product) {
+                    $hppPerUnit = calculateHPPForProduct($conn, $product_id, $product['production_yield'], $product['production_time_hours']);
+                    $updateStmt = $conn->prepare("UPDATE products SET cost_price = ? WHERE id = ?");
+                    $updateStmt->execute([$hppPerUnit, $product_id]);
+                }
+
                 $_SESSION['resep_message'] = [
-                    'text' => 'Item resep berhasil diupdate',
+                    'text' => 'Item resep berhasil diupdate. HPP otomatis diupdate.',
                     'type' => 'success'
                 ];
                 break;
@@ -200,11 +293,15 @@ try {
                 $production_time_hours = $_POST['production_time_hours'] ?? 1;
                 $sale_price = $_POST['sale_price'] ?? 0;
 
-                $stmt = $conn->prepare("UPDATE products SET production_yield = ?, production_time_hours = ?, sale_price = ? WHERE id = ?");
-                $stmt->execute([$production_yield, $production_time_hours, $sale_price, $product_id]);
+                // Hitung HPP terbaru setelah update info produk
+                $hppPerUnit = calculateHPPForProduct($conn, $product_id, $production_yield, $production_time_hours);
+
+                // Update product dengan cost_price yang baru dihitung
+                $stmt = $conn->prepare("UPDATE products SET production_yield = ?, production_time_hours = ?, sale_price = ?, cost_price = ? WHERE id = ?");
+                $stmt->execute([$production_yield, $production_time_hours, $sale_price, $hppPerUnit, $product_id]);
 
                 $_SESSION['resep_message'] = [
-                    'text' => 'Informasi produk berhasil diupdate',
+                    'text' => 'Informasi produk berhasil diupdate. HPP otomatis dihitung: Rp ' . number_format($hppPerUnit, 0, ',', '.'),
                     'type' => 'success'
                 ];
                 break;
@@ -258,8 +355,19 @@ try {
             $stmt = $conn->prepare("DELETE FROM product_recipes WHERE id = ? AND product_id = ?");
             $stmt->execute([$id, $product_id]);
 
+            // Auto-update HPP setelah hapus item
+            $productStmt = $conn->prepare("SELECT production_yield, production_time_hours FROM products WHERE id = ?");
+            $productStmt->execute([$product_id]);
+            $product = $productStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($product) {
+                $hppPerUnit = calculateHPPForProduct($conn, $product_id, $product['production_yield'], $product['production_time_hours']);
+                $updateStmt = $conn->prepare("UPDATE products SET cost_price = ? WHERE id = ?");
+                $updateStmt->execute([$hppPerUnit, $product_id]);
+            }
+
             $_SESSION['resep_message'] = [
-                'text' => 'Item berhasil dihapus dari resep',
+                'text' => 'Item berhasil dihapus dari resep. HPP otomatis diupdate.',
                 'type' => 'success'
             ];
 
